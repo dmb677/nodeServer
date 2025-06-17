@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+</head>
+
+<body>
+    <h1>Auth</h1>
+    <p>
+        You are: <span id="isLoggedin"></span> as: <b><span id="getUsername">?????</span></b> who is an admin: <b><span
+                id="isAdmin">????</span></b>
+    <p>
+        <button type="button" id="login">Log in</button>
+    <p>
+        <button type="button" id="logout">Log out</button>
+    <h1>Log</h1>
+    <p>
+        <a href="/log/Ips">IP log</a>
+    <p>
+        <a href="/log/server">server Log</a>
+    <p>
+        <a href="/log/userDB">user DB</a>
+    <p>
+        <a href="/log/failedURLs">failed REQs</a>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+    integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+    $.get("/auth/isLoggedin", function(data) {
+        (data) ? $("#isLoggedin").html("Logged in"): $("#isLoggedin").html("Logged out");
+    });
+    $.get("/auth/getUsername", function(data) {
+        (data) ? $("#getUsername").html(data): $("#getUsername").html("n/a");
+    });
+    $.get("/auth/isAdmin", function(data) {
+        $("#isAdmin").html(data);
+    });
+
+    $("#login").click(function() {
+        window.location.href = "/auth/login";
+    });
+    $("#logout").click(function() {
+        $.get("/auth/logout");
+        location.reload(true);
+    });
+</script>
+
+</html>

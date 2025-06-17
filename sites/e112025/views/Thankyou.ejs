@@ -1,0 +1,47 @@
+<style>
+    .gallery-image {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px;
+        margin: 5px;
+        height: 220px;
+    }
+</style>
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('partials/head.ejs',{title:'Thank You'}) %>
+
+<body>
+    <%- include('partials/navbar.ejs') %>
+    <section class="pt-5">
+
+
+        <div class="container">
+            <h1 class="mt-2 py-5"><span class="fw-bold">THANKYOU</span><span class="fw-light">.culture</span></h1>
+            <p>
+                Thank you for contributing to this project. You can add more pictures <a href="/upload">here</a> or see the pictures people have added <a href="/#Image-start">here</a>. 
+            </p>
+
+           
+
+
+            <div id="addImages"></div>
+
+        </div>
+    </section>
+
+
+
+    <%- include('partials/footer.ejs') %>
+</body>
+
+</html>
+
+
+
+<script>
+    populateImages(document.getElementById('my-template'), document.getElementById('addImages'));
+</script>

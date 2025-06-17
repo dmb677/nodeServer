@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+
+<%- include('partials/head.ejs',{title:'Upload'}) %>
+
+<body>
+    <%- include('partials/navbar.ejs') %>
+    <section class="pt-5">
+
+
+        <div class="container" id="uploadSection">
+            <div id="liveAlertPlaceholder" class="pt-5 mt-4"></div>
+
+            <span id="mainText">
+                <h1 class="mt-2 py-5"><span class="fw-bold">CONTRIBUTE</span><span class="fw-light">.culture</span></h1>
+
+                <p>Your contribution of photos makes this project what it is!! Thanks for your contributing</p>
+
+                <label class="form-label" for="customFile">Select Images to Upload</label>
+
+                <input type="file" class="form-control" id="customFile" accept="image/*" multiple />
+
+             
+                <br>
+
+                <div id="drop_zone">
+                    <p>...or drag and drop files here</p>
+                </div>
+                <br />
+
+            </span>
+
+        </div>
+    </section>
+</body>
+
+</html>
+
+<style>
+
+</style>
+
+<script>
+    var dropZone = document.getElementById('drop_zone');
+
+    dropZone.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        dropZone.classList.add('hover');
+    });
+
+    dropZone.addEventListener('dragleave', (event) => {
+        event.preventDefault();
+        dropZone.classList.remove('hover');
+    });
+
+    dropZone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        dropZone.classList.remove('hover');
+        var files = event.dataTransfer.files;
+        handlesFiles(files);
+    });
+
+
+
+    function handlesFiles(files) {
+        for (var count = 0; count < files.length; count++) {
+            var file = files[count];
+            uploadFile(file);
+        }
+    }
+
+    function uploadFile(file) {
+        const id = Date.now();
+
+        let html = [
+            `<div class="img-thumbnail-spinner text-center col-sm-3" id="${id}">`,
+            `<div class="spinner-grow text-primary" role="status">`,
+            `<span class="visually-hidden">Loading...</span>`,
+            `</div></div>`
+        ].join('');
+
+
+        console.log("html");
+
+        if (document.getElementById('alertMessageText')) {
+            document.getElementById('alertMessageText').innerHTML += html;
+        } else {
+            appendAlert(html, 'light')
+        }
+
+        var formData = new FormData(); //remember to increase NGINX size
+        formData.append('file', file);
+        fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById(id).remove();
+                document.getElementById('alertMessageText').innerHTML +=
+                    `<img class="img-thumbnail" src="/${data.filename}"/>`
+
+            });
+    }
+
+    function uploadFileButton() {
+        const fileInput = document.getElementById('customFile');
+        //if no files are selected
+        handlesFiles(fileInput.files)
+
+    }
+
+    document.getElementById('customFile').addEventListener('input', function(e) {
+        if (e.target.files[0]) {
+            uploadFileButton()
+            console.log("here")
+
+        }
+    });
+
+
+
+
+
+    const alertPlaceholder = document.getElementById('liveAlertPlaceholder')
+    const appendAlert = (message, type) => {
+        const wrapper = document.createElement('div')
+        wrapper.innerHTML = [
+            `<div class="alert alert-${type} alert-dismissible" role="alert" id="myAlert">`,
+            `   <div id="alertMessageText"class="container">${message}</div>`,
+            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+
+            '   <input type="text" class="form-control my-3" aria-label="Small"',
+            'aria-describedby="inputGroup-sizing-sm" placeholder="Add caption" id="caption">',
+            '   <button class="my-3 btn btn-primary" type="submit" id="submitImages">Submit Images</button>',
+            '</div>'
+        ].join('')
+
+        alertPlaceholder.append(wrapper)
+        document.getElementById("mainText").classList.add('opacity-25');
+
+        const myAlert = document.getElementById('myAlert')
+        myAlert.addEventListener('closed.bs.alert', event => {
+            document.getElementById("mainText").classList.add('opacity-100');
+        })
+
+
+        var submitButton = document.getElementById('submitImages');
+        submitButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            var images = document.getElementsByClassName('img-thumbnail')
+            var imageFileArray = [];
+            for (let i of images) {
+                imageFileArray.push(i.getAttribute("src"))
+            }
+            fetch('/upload-log', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "paths": imageFileArray,
+                        "caption": document.getElementById('caption').value,
+
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("complete");
+                    bootstrap.Alert.getOrCreateInstance(document.getElementById('myAlert')).close();
+                    window.location.href = "/Thankyou"
+                    
+
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+
+    }
+</script>
+
+
+
+<style>
+    .img-thumbnail {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px;
+        width: 150px;
+    }
+
+    .img-thumbnail-spinner {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px;
+        width: 150px;
+    }
+
+    #drop_zone {
+        width: 100%;
+        min-height: 200px;
+        border: 2px dashed #ccc;
+        border-radius: 10px;
+        padding: 20px;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    #drop_zone.hover {
+        background-color: #f0f0f0;
+    }
+
+    #uploadSection {
+        position: relative;
+    }
+
+    #liveAlertPlaceholder {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 10;
+    }
+</style>

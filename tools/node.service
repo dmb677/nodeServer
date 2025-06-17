@@ -1,0 +1,12 @@
+[Unit]
+Description=Website-Node Service
+
+[Service]
+User=root
+WorkingDirectory=/home/die
+ExecStart=node app.js
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

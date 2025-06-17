@@ -1,0 +1,45 @@
+<style>
+    .gallery-image {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px;
+        margin: 5px;
+        height: 220px;
+    }
+
+    .signal {
+        height: 500px;
+    }
+</style>
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('partials/head.ejs',{title:'Contact'}) %>
+
+<body>
+    <%- include('partials/navbar.ejs') %>
+    <section class="pt-5">
+        <div class="container">
+            <h1 class="mt-2 py-5"><span class="fw-bold">CONTACT</span><span class="fw-light">.culture</span></h1>
+
+            <p class="text-center">
+                <img class="signal text-center" src="/dist/signal-username-qr-code.png" />
+
+            </p>
+            <p class="text-center">
+                <a href="https://signal.me/#eu/66tjssi2k99MF_iYfAQfalbG8Xt0pzucHSqnXrg7FkCvj-VoptlKj6MDhT0gWBq-">
+                    Or Click Here
+                </a>
+
+            </p>
+        </div>
+    </section>
+
+
+
+    <%- include('partials/footer.ejs') %>
+</body>
+
+</html>

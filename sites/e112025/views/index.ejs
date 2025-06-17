@@ -1,0 +1,156 @@
+<style>
+    .gallery-image {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px;
+        margin: 5px;
+        height: 220px;
+    }
+
+    .back-image {
+        background: rgba(5, 5, 5, 0.5);
+
+    }
+
+    #top {
+        background-image: url('dist/bm.jpg');
+        background-size: 100%;
+        background-size: cover;
+        background-position: center;
+
+
+    }
+</style>
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('partials/head.ejs',{title:'E-11 Culture'}) %>
+
+<body>
+    <%- include('partials/navbar.ejs') %>
+    <template id="my-template">
+        <div class="user-card border-bottom border-secondary py-3">
+            <div class="container">
+                <div class="row">
+                    <h3 class="pt-5 text-capitalize"></h3>
+                    <span></span>
+                </div>
+                <div class="row">
+                    <button type="button" class="btn btn-primary">Remove Content</button>
+                </div>
+            </div>
+        </div>
+
+    </template>
+
+
+    <section id="top" class="pt-5">
+        <div class="back-image py-5">
+            <div class="container">
+                <h1 class="mt-2 py-5 text-light"><span class="fw-bold">EVOLVE</span><span
+                        class="fw-light">.culture</span>
+                </h1>
+                <p class="text-light">
+                    <span class="fs-4 fw-medium">G</span>enerations of humans have lived in community, have lived
+                    connected
+                    to
+                    the land, connected to environment,
+                    connected to a shared identity and shared history. <span class="fw-medium">Their life was always
+                        about
+                        something bigger.</span> Rituals,
+                    ceremonies, and belief systems that placed their existence in the context of the universe. Life was
+                    meaningful.
+                </p>
+                <p class="text-light">
+                    <span class="fs-4 fw-medium">T</span>oday, all that's been dissolved. Science has dissolved the myth
+                    of
+                    religion and superstition. Everything
+                    has been reduced to mere materialism. Capitalist individualism has destroyed our sense of community,
+                    our
+                    sense of being has been commodified, our art and culture is just something to be marketed and sold
+                    to
+                    the
+                    highest bidder. Everything that once brought us together has evaporated. "All that was solid, melted
+                    into
+                    air", Now we stand alone as individuals to be judged by the marketplace. That final God left
+                    standing to
+                    rule over us.
+                </p>
+                <p class="text-light">
+                    <span class="fs-5 fw-medium">Alone our lives are meaningless and short.</span>
+                </p>
+                <p class="text-light">
+
+                    <span class="fs-6 fw-medium">W</span>e are the children that have inherited nothing. We can only
+                    strive
+                    to
+                    be found productive enough so that
+                    the Economy rewards us with a McMansion and a 401K.
+                </p>
+                <p class="text-light">
+                    <span class="fs-6 fw-medium">H</span>ere at E11, we try to boldly and defiantly create a new
+                    culture, a
+                    new
+                    way of being, not one that
+                    romanticizes the
+                    past. But one that forges a new community, a new way of being, a new type of living for something
+                    bigger
+                    than us, a new culture. We live for art and the creative process. We live for community and dance.
+                    We
+                    are
+                    valuable not because we can create value in the economy, but because we can feel interconnected and
+                    part
+                    of
+                    the web, and contribute to its culture.
+
+                </p>
+                <p class="text-light">
+                    <span class="fs-6 fw-medium">N</span>ew rituals and ceremonies bind us together and create meaning
+                    out of
+                    the chaos and empitness of solitary
+                    existence.
+                </p>
+
+
+            </div>
+        </div>
+    </section>
+
+
+
+    <section id="Image-start" class="pt-5">
+        <div class="container">
+            <h1 class="mt-2 py-5"><span class="fw-bold">IMAGINE</span><span class="fw-light">.culture</span>
+            </h1>
+
+            <div id="addImages"></div>
+        </div>
+    </section>
+
+
+
+
+
+
+
+    <%- include('partials/footer.ejs') %>
+</body>
+
+</html>
+
+
+
+<script>
+   
+
+    
+    fetch('/auth/isLoggedin')
+        .then(res => res.json())
+        .then(d => {
+             populateImages(document.getElementById('my-template'), document.getElementById('addImages'), d);
+        });
+
+    
+</script>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        #liveAlertPlaceholder {
+            position: absolute;
+            justify-content: center;
+            text-align: center;
+            align-items: center;
+            height: 430px;
+            width: 680px;  
+            font-size: 20px;
+            top: 80px;
+            left: 10px
+        }
+
+        canvas {
+            border: 10px solid #d61414;
+            background-color: #f5f1f1;
+            z-index: -1;
+            height: 450px;
+            width: 700px;
+        }
+
+        .holder {
+            position: relative;
+        }
+
+      
+
+    </style>
+</head>
+
+<body onload="startGame()">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+        integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
+        integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
+        integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+        integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.min.js"
+        integrity="sha512-rpLlll167T5LJHwp0waJCh3ZRf7pO6IT1+LZOhAyP6phAirwchClbTZV3iqL3BMrVxIYRbzGTpli4rfxsCK6Vw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+    <div class="container holder">
+
+        <div id="liveAlertPlaceholder"></div>
+        <div id="myCanvas"></div>
+        
+
+    </div>
+
+
+
+
+</body>
+
+<script src="/dist_all/game.js"></script>
+
+<script>
+    const appendAlert = (message, type) => {
+        const wrapper = document.createElement('div')
+        wrapper.innerHTML = [
+            `<div class="alert alert-${type}">`,
+            `   <div>${message}</div>`,
+            '</div>'
+        ].join('')
+        $("#liveAlertPlaceholder").append(wrapper);
+    }
+
+
+    introMessage = [
+        `<h1 class='mt-5'> Game of Death</h1>`,
+        `<input type="user" class="form-control" id="gamername"`,
+        `placeholder="Enter User Name and Press Play">`,
+        `<button type="submit" class="btn btn-primary my-5" id="submitButton">Play</button>`,
+    ].join('');
+
+    appendAlert(introMessage, 'warning');
+    $("#submitButton").click(checkUser);
+
+    function checkUser() {
+        val = $("#gamername").val();
+        if (gamePlayer == null) {
+            if (!val) {
+                alert("Please Enter a User Name");
+            } else {
+                $.get("/game/sign/" + val, function() {
+                    gamePlayer = val;
+                    //el.requestFullscreen();
+                    myGameArea.start();
+                    $("#liveAlertPlaceholder").html("");
+                });
+            }
+        } else {
+            controls = true;
+            startGame();
+            myGameArea.start();
+        }
+    };
+
+
+
+
+    document.addEventListener('keydown', (event) => {
+        switch (event.key) {
+            case 'ArrowUp':
+                moveup();
+                break;
+            case 'ArrowRight':
+                moveright();
+                break;
+            case 'ArrowLeft':
+                moveleft();
+                break;
+        }
+    });
+
+
+    document.addEventListener('keyup', (event) => {
+        switch (event.key) {
+            case 'ArrowUp':
+                clearThrust();
+                break;
+            case 'ArrowRight':
+                moveright();
+                break;
+            case 'ArrowLeft':
+                moveleft();
+                break;
+        }
+    });
+
+
+
+    var el = document.getElementById('myCanvas');
+
+
+
+    el.addEventListener('touchstart', function(e) {
+        moveup();
+        e.preventDefault()
+    }, false)
+
+
+    el.addEventListener('touchend', function(e) {
+        clearThrust()
+        e.preventDefault()
+    }, false)
+</script>
+
+
+
+
+
+</html>
