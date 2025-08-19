@@ -27,7 +27,7 @@
     }
 
     .smartPad {
-        padding-top: 6vh;
+        padding-top: 4vh;
     }
 
 
@@ -190,20 +190,24 @@
     }
 
     function startTyping() {
-        typeWriter2(txt, "demo", 0, 100, function() {
-            setTimeout(function() {
-                typeWriter2(txt2, "demo2", 0, 300, function() {
-                    var growText = document.getElementById("grow");
-                    setTimeout(function() {
-                        growText.classList.add("nervous");
-                    }, 250)
-                    var dieText = document.getElementById("dieWhenYouDie");
-                    setTimeout(function() {
-                        dieText.style.display = 'block';
-                    }, 500)
-                });
-            }, 1500);
-        });
+        setTimeout(function() {
+            typeWriter2(txt, "demo", 0, 100, function() {
+                setTimeout(function() {
+                    typeWriter2(txt2, "demo2", 0, 300, function() {
+                        var growText = document.getElementById("grow");
+                        setTimeout(function() {
+                            growText.classList.add("nervous");
+                        }, 250)
+                        var dieText = document.getElementById("dieWhenYouDie");
+                        setTimeout(function() {
+                            dieText.style.display = 'block';
+                        }, 500)
+                    });
+                }, 1500);
+            });
+
+        }, 1000);
+
     }
 
 
