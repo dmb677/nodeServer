@@ -9,6 +9,7 @@ git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Crese
 ## software to install
 lsb_release -a
 sudo apt update
+sudo apt upgrade
 sudo apt install nodejs npm -y
 sudo apt install nginx -y
 sudo apt install net-tools -y
@@ -17,7 +18,7 @@ sudo apt install certbot python3-certbot-nginx -y
 #setup ufw
 sudo ufw allow OpenSSH
 sudo ufw allow 'Nginx Full'
-sudo uft allow ssh
+sudo ufw allow ssh
 sudo ufw enable
 
 
