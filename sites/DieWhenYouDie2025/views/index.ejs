@@ -9,7 +9,7 @@
         /* Sets the text color to black */
         text-decoration: none;
         /* Removes the underline */
-        font-size: 1.5vh;
+        font-size: 1.75vh;
     }
 
     a:hover {
@@ -27,7 +27,7 @@
     }
 
     .smartPad {
-        padding-top: 4vh;
+        padding-top: 2vh;
     }
 
 
@@ -46,6 +46,7 @@
 
     }
 
+   
     #demo {
         overflow: hidden;
         font-size: 2.5vh;
@@ -175,10 +176,21 @@
 
     var cursor = ["<span class='blink'>|</span>"];
 
+    var debug = Number( !<%= debug %> );
+
+    var speedArray = {
+        startType: 1000*debug,
+        type: 100*debug,
+        slowType: 300*debug,
+        paragraph: 1500*debug,
+        grow: 250*debug,
+        dieText: 500*debug,
+        delay: 1500*debug
+    }
 
     function typeWriter2(currentTxt, elementID, idx, speed, callback) {
         if (idx < currentTxt.length - 1) {
-            (currentTxt[idx + 2] === "<p class='wait'>") ? thisSpeed = 1500: thisSpeed = speed;
+            (currentTxt[idx + 2] === "<p class='wait'>") ? thisSpeed = speedArray.paragraph: thisSpeed = speed;
             idx++;
             document.getElementById(elementID).innerHTML = currentTxt.slice(0, idx).join("") + cursor;
             setTimeout(function() {
@@ -192,22 +204,22 @@
 
     function startTyping() {
         setTimeout(function() {
-            typeWriter2(txt, "demo", 0, 100, function() {
+            typeWriter2(txt, "demo", 0, speedArray.type, function() {
                 setTimeout(function() {
-                    typeWriter2(txt2, "demo2", 0, 300, function() {
+                    typeWriter2(txt2, "demo2", 0, speedArray.slowType, function() {
                         var growText = document.getElementById("grow");
                         setTimeout(function() {
                             growText.classList.add("nervous");
-                        }, 250)
+                        }, speedArray.grow)
                         var dieText = document.getElementById("dieWhenYouDie");
                         setTimeout(function() {
                             dieText.style.display = 'block';
-                        }, 500)
+                        }, speedArray.dieText)
                     });
-                }, 1500);
+                }, speedArray.delay);
             });
 
-        }, 1000);
+        }, speedArray.startType);
 
     }
 
@@ -225,9 +237,6 @@
 </script>
 
 <body onload="startTyping()">
-
-
-
     <!-- START: Body Content -->
     <section class="sectionTop">
         <div class="container smartPad" style="height: 100%;">
@@ -248,7 +257,7 @@
                 <div class="col-lg-10 text-center" id="dieWhenYouDie">
                     <span class="">💀</span><span class="fw-bold">DieWhenYouDie</span><span class="box">💀</span>
                     <br><span class="fw-bold">2025</span>
-                    <br><span class="">November 8th</span>
+                    <br><span class="">October 25th</span>
                     <br>
 
 
@@ -260,8 +269,7 @@
                         </a>
                     </p>
 
-                     <p class="text-center smartPad"><a
-                            href="https://2024.diewhenyoudie.org">
+                    <p class="text-center smartPad"><a href="https://2024.diewhenyoudie.org">
                             Goto Last Year's site
                         </a>
                     </p>

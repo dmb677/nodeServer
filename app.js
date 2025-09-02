@@ -137,11 +137,6 @@ app.post('/upload-log-delete/:del', (req, res) => {
     res.end();
 });
 
-
-app.get('/', (req, res) => {
-    res.render('index');
-});
-
 app.get('/b/tag/:id', (req, res, next) => {
     // see if file exits fs.statSync()
     if (true) {
@@ -177,6 +172,14 @@ app.all('/api/:id', (req, res) => {
         }
     });
 });
+
+
+app.get('/', (req, res) => {
+    res.render('index', {
+        debug: (req.query.debug === 'true')
+    });
+});
+
 
 app.get('*', (req, res) => {
     var theURL = req.url.replace(/^\//, '').replace(/\.+/g, '');

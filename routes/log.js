@@ -24,11 +24,15 @@ module.exports = function (IPPath, logFilePath, userDBpath, debugDump) {
         fs.mkdirSync(logIPFiles);
     }
 
-    exec("mv " + logFile + " " + logFile + Date.now(), (err, stdout, stderr) => {
-        if (err) {
-            console.log(err);
-        }
-    });
+    if (fs.existsSync(logFile)) {
+        exec("mv " + logFile + " " + logFile + Date.now(), (err, stdout, stderr) => {
+            if (err) {
+                console.log(err);
+            }
+        });
+    }
+
+
     //exec("rm " + logFile, (err, stdout, stderr) => {});
     exec("rm " + logIPFiles + "/*", (err, stdout, stderr) => {});
 
