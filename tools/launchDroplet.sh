@@ -36,7 +36,7 @@ siteURL2="www.wesleybates-graduates.com" #enter new URLs
 ## create .env
 cp /home/server/tools/example.env /home/server/sites/$servername/.env
 sed -i "s/varport/$port/g" /home/server/sites/$servername/.env
-sed -i "s/varservernamer/$servername/g" /home/server/sites/$servername/.env
+sed -i "s/varservername/$servername/g" /home/server/sites/$servername/.env
 cat /home/server/sites/$servername/.env
 
 # put admin in userfile
