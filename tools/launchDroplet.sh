@@ -45,7 +45,7 @@ cp /home/server/tools/userDB.json /home/$servername/userDB.json
 
 ## create service file
 cp /home/server/tools/node.service /etc/systemd/system/$servername.service
-sed -i "s/varservernamer/$servername/g" /etc/systemd/system/$servername.service
+sed -i "s/varservername/$servername/g" /etc/systemd/system/$servername.service
 cat /etc/systemd/system/$servername.service
 systemctl daemon-reload
 systemctl start $servername.service
