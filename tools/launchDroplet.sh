@@ -26,29 +26,42 @@ sudo ufw enable
 git clone git@github.com:dmb677/nodeServer.git /home/server
 npm install --prefix /home/server
 
+##Variables
+servername="wesleyBates" #enter app server names
+port="8089"
+siteURL="wesleybates-graduates.com" #enter new URLs
+siteURL2="www.wesleybates-graduates.com" #enter new URLs
 
-servername="DieWhenYouDie2025" #enter app server names
 
 ## create .env
 cp /home/server/tools/example.env /home/server/sites/$servername/.env
-vim /home/server/sites/$servername/.env
+sed -i "s/varport/$port/g" /home/server/sites/$servername/.env
+sed -i "s/varservernamer/$servername/g" /home/server/sites/$servername/.env
+cat /home/server/sites/$servername/.env
+
+# put admin in userfile
+mkdir /home/$servername
+cp /home/server/tools/userDB.json /home/$servername/userDB.json
 
 ## create service file
 cp /home/server/tools/node.service /etc/systemd/system/$servername.service
-vim /etc/systemd/system/$servername.service
+sed -i "s/varservernamer/$servername/g" /etc/systemd/system/$servername.service
+cat /etc/systemd/system/$servername.service
 systemctl daemon-reload
 systemctl start $servername.service
 
 ##You can now test that the site is running if you disable ufw and url:port
 
-siteURL="diewhenyoudie.org" #enter new URLs
-siteURL2="www.diewhenyoudie.org" #enter new URLs
-
 ##setup nginx site
 cp /home/server/tools/nginx.conf /etc/nginx/nginx.conf
 cp /home/server/tools/nginx-site.conf /etc/nginx/sites-available/$siteURL
 sudo ln -s /etc/nginx/sites-available/$siteURL /etc/nginx/sites-enabled/
-vim /etc/nginx/sites-available/$siteURL
+sed -i "s/varport/$port/g" /etc/nginx/sites-available/$siteURL
+sed -i "s/varURL1/$siteURL/g" /etc/nginx/sites-available/$siteURL
+sed -i "s/varURL2/$siteURL2/g" /etc/nginx/sites-available/$siteURL
+cat /etc/nginx/sites-available/$siteURL
+
+
 sudo systemctl reload nginx
 sudo systemctl restart nginx
 

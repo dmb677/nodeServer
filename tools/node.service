@@ -4,7 +4,7 @@ Description=Website-Node Service
 [Service]
 User=root
 WorkingDirectory=/home/server
-ExecStart=node app.js {NAME}
+ExecStart=node app.js varservername
 Restart=always
 RestartSec=3
 
