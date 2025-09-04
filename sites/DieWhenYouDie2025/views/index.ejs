@@ -3,241 +3,7 @@
 
 <%- include('partials/head.ejs',{title:'DieWhenYouDie'}) %>
 
-<style>
-    a {
-        color: black;
-        /* Sets the text color to black */
-        text-decoration: none;
-        /* Removes the underline */
-        font-size: 1.75vh;
-    }
-
-    a:hover {
-
-        color: rgb(117, 47, 47);
-        /* Sets the text color to black */
-        text-decoration: none;
-    }
-
-    a:active {
-        color: rgb(31, 21, 21);
-        /* Sets the text color to black */
-        text-decoration: none;
-
-    }
-
-    .smartPad {
-        padding-top: 2vh;
-    }
-
-
-
-    .nervous {
-        animation:
-            breath 2.5s ease-in-out infinite;
-
-    }
-
-    #dieWhenYouDie {
-        display: none;
-        font-size: 3vh;
-        overflow: hidden;
-        animation: fadeIn 3s forwards;
-
-    }
-
-   
-    #demo {
-        overflow: hidden;
-        font-size: 2.5vh;
-        /* Text size will be 5% of the viewport width */
-
-    }
-
-    #demo2 {
-        overflow: hidden;
-        font-size: 3vh;
-        /* Text size will be 5% of the viewport width */
-
-    }
-
-    .signal {
-        height: 150px;
-        width: auto;
-    }
-
-    .box {
-
-
-        display: inline-block;
-        margin: 0;
-        padding: 0;
-
-
-        position: relative;
-        /* Needed for transform origin */
-        animation: fall-and-rattle 5s ease-in-out forwards;
-        /* 2 seconds duration, stays at end state */
-        transform-origin: 30% 85%;
-        /* Sets the pivot point for the rotation */
-        animation-delay: 3.0s;
-    }
-
-    @keyframes fall-and-rattle {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        25% {
-            transform: rotate(200deg);
-        }
-
-        50% {
-            transform: rotate(160deg);
-        }
-
-        60% {
-            transform: rotate(190deg);
-        }
-
-        70% {
-            transform: rotate(170deg);
-        }
-
-        80% {
-            transform: rotate(185deg);
-        }
-
-        90% {
-            transform: rotate(175deg);
-        }
-
-        100% {
-            transform: rotate(180deg);
-        }
-    }
-
-
-    @keyframes breath {
-        0% {
-            transform: scale(1);
-            /* Initial size */
-        }
-
-        50% {
-            transform: scale(1.2);
-            /* Slightly larger (inhale) */
-        }
-
-        100% {
-            transform: scale(1);
-            /* Return to initial size (exhale) */
-        }
-
-
-
-
-
-    }
-
-    @keyframes fadeIn {
-        0% {
-            opacity: 0;
-            /* Start with fully transparent text */
-        }
-
-        100% {
-            opacity: 1;
-            /* End with fully opaque text */
-        }
-    }
-</style>
-
-
-<script>
-    var i = 0;
-    var txt = ["<p>"]
-        .concat("Sitting in the Snow".split(""))
-        .concat("</p>")
-        .concat("<p class='wait'>")
-        .concat("Watching the setting sun and the little beauty this world has to offer.".split(""))
-        .concat("</p>")
-        .concat("<p class='wait'>")
-        .concat("And just thinking...".split(""))
-        .concat("</p>");
-
-
-
-    var txt2 = []
-        .concat("<div id='grow'>")
-        .concat("I WISH I WAS NEVER BORN!".split(""))
-        .concat("</div>");
-
-
-    var cursor = ["<span class='blink'>|</span>"];
-
-    var debug = Number( !<%= debug %> );
-
-    var speedArray = {
-        startType: 1000*debug,
-        type: 100*debug,
-        slowType: 300*debug,
-        paragraph: 1500*debug,
-        grow: 250*debug,
-        dieText: 500*debug,
-        delay: 1500*debug
-    }
-
-    function typeWriter2(currentTxt, elementID, idx, speed, callback) {
-        if (idx < currentTxt.length - 1) {
-            (currentTxt[idx + 2] === "<p class='wait'>") ? thisSpeed = speedArray.paragraph: thisSpeed = speed;
-            idx++;
-            document.getElementById(elementID).innerHTML = currentTxt.slice(0, idx).join("") + cursor;
-            setTimeout(function() {
-                typeWriter2(currentTxt, elementID, idx, speed, callback);
-            }, thisSpeed);
-        } else {
-            document.getElementById(elementID).innerHTML = currentTxt.slice(0, idx).join("");
-            callback();
-        }
-    }
-
-    function startTyping() {
-        setTimeout(function() {
-            typeWriter2(txt, "demo", 0, speedArray.type, function() {
-                setTimeout(function() {
-                    typeWriter2(txt2, "demo2", 0, speedArray.slowType, function() {
-                        var growText = document.getElementById("grow");
-                        setTimeout(function() {
-                            growText.classList.add("nervous");
-                        }, speedArray.grow)
-                        var dieText = document.getElementById("dieWhenYouDie");
-                        setTimeout(function() {
-                            dieText.style.display = 'block';
-                        }, speedArray.dieText)
-                    });
-                }, speedArray.delay);
-            });
-
-        }, speedArray.startType);
-
-    }
-
-
-
-
-
-
-    setInterval(function() {
-        var blinkText = document.getElementsByClassName("blink");
-        for (var i = 0; i < blinkText.length; i++) {
-            blinkText[i].style.visibility = (blinkText[i].style.visibility === 'hidden' ? '' : 'hidden');
-        }
-    }, 357);
-</script>
-
-<body onload="startTyping()">
-    <!-- START: Body Content -->
+<body onload="beginAnimation()">
     <section class="sectionTop">
         <div class="container smartPad" style="height: 100%;">
             <div class="row smartPad">
@@ -259,8 +25,6 @@
                     <br><span class="fw-bold">2025</span>
                     <br><span class="">October 25th</span>
                     <br>
-
-
                     <p class="text-center smartPad"><a
                             href="https://signal.group/#CjQKIN9PI1Hb0JFQKFc5LcKqsX-zB0iO9unZKoYa9jcKsdOjEhDXc8D1_yaX5u44UWjy_cnU">
                             Join the Signal Group
@@ -273,21 +37,19 @@
                             Goto Last Year's site
                         </a>
                     </p>
-
-
-
                 </div>
                 <div class="col-lg-1"></div>
-
+            </div>
+            <div class="row smartPad">
+                <div class="col-1g-12 text-center"><button type="button" id="fastForward"
+                        class="btn btn-secondary btn-small">Fast Forward</button>
+                </div>
             </div>
 
         </div>
 
     </section>
-
-
-
-
+    <script src="./dist/js/myscript.js"></script>
 </body>
 
 </html>
