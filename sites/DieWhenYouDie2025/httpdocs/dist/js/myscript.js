@@ -78,7 +78,9 @@ function beginAnimation() {
                     var dieText = document.getElementById("dieWhenYouDie");
                     setTimeout(function () {
                         dieText.style.display = 'block';
+                        document.getElementById("fastForward").remove();
                     }, speedArray.dieText);
+
                 });
             }, speedArray.delay);
         });

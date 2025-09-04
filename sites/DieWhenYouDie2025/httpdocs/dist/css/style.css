@@ -29,7 +29,9 @@ a:active {
 }
 
 .btn {
-    opacity: 0.85;
+    opacity: 0;
+    animation: fadeIn 5s forwards;
+    animation-delay: 1.0s;
 }
 
 .nervous {
