@@ -35,6 +35,8 @@ module.exports = function (userDBpath) {
         }
     });
 
+
+    //**old CP*/
     router.post("/signin", (req, res) => {
         const {
             name,
@@ -64,6 +66,31 @@ module.exports = function (userDBpath) {
                 Username: name
             });
         }
+    });
+
+    //** New CP */
+    router.get("/quick-signin", (req, res) => {
+        user = req.query.user;
+        password = req.query.password;
+        if (UserDB.has(user)) {
+            if (UserDB.get(user).password === password) {
+                req.session.regenerate(function (err) {
+                    if (err) next(err);
+                    req.session.user = user;
+                    req.session.admin = UserDB.get(req.session.user).admin;
+                    req.session.save(function (err) {
+                        if (err) return next(err);
+                        res.send("You Are logged IN");
+                    });
+                });
+
+            } else {
+                res.send("Incorrect Password");
+            }
+        } else {
+            res.send("User Cannot be Found");
+        }
+
     });
 
     router.post("/signup", (req, res) => {

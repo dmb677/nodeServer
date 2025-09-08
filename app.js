@@ -187,7 +187,7 @@ app.get('*', (req, res) => {
         if (err) {
             req.hasError = true;
 
-            res.render('error', {
+            res.status(404).render('error', {
                 message: req.url
             });
             res.end();
