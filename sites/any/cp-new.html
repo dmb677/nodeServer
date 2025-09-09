@@ -330,9 +330,18 @@
 
 
     loginButton.onclick = function() {
-        var user = document.getElementById("userVal").value;
-        var pass = document.getElementById("passVal").value;
-        fetch(`/auth/quick-signin/?user=${user}&password=${pass}`)
+        const postData = {
+            user: document.getElementById("userVal").value,
+            password: document.getElementById("passVal").value
+        }
+
+        fetch(`/auth/quick-signin/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(postData)
+            })
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! status: ${res.status}`);

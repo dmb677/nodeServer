@@ -69,9 +69,11 @@ module.exports = function (userDBpath) {
     });
 
     //** New CP */
-    router.get("/quick-signin", (req, res) => {
-        user = req.query.user;
-        password = req.query.password;
+    router.post("/quick-signin", (req, res) => {
+        const {
+            user,
+            password
+        } = req.body;
         if (UserDB.has(user)) {
             if (UserDB.get(user).password === password) {
                 req.session.regenerate(function (err) {
