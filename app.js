@@ -11,7 +11,8 @@ if (!fs.existsSync(website + '/.env')) {
     process.exit();
 }
 require('dotenv').config({
-    path: website + '/.env'
+    path: website + '/.env',
+    quiet: true
 });
 var debugDump = (process.argv[3] === 'debug');
 
@@ -175,22 +176,18 @@ app.all('/api/:id', (req, res) => {
 
 
 app.get('/', (req, res) => {
-    res.render('index', {
-        debug: (req.query.debug === 'true')
-    });
+    res.render('index');
 });
 
 
-app.get('*', (req, res) => {
+app.use((req, res) => {
     var theURL = req.url.replace(/^\//, '').replace(/\.+/g, '');
     res.render(theURL, {}, (err, html) => {
         if (err) {
             req.hasError = true;
-
             res.status(404).render('error', {
                 message: req.url
             });
-            res.end();
         } else {
             res.send(html);
         }
