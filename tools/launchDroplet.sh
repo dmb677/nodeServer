@@ -48,7 +48,7 @@ cp /home/server/tools/node.service /etc/systemd/system/$servername.service
 sed -i "s/varservername/$servername/g" /etc/systemd/system/$servername.service
 cat /etc/systemd/system/$servername.service
 systemctl daemon-reload
-systemctl start $servername.service
+systemctl enable $servername.service
 
 ##You can now test that the site is running if you disable ufw and url:port
 

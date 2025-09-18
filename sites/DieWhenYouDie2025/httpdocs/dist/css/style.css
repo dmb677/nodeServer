@@ -1,3 +1,9 @@
+@media screen and (max-width: 768px) {
+        .leftAuto {
+            border: none; /* or border: 0; */
+        }
+    }
+
 .smartSize-1 {
     font-size: 4vh;
     overflow: hidden;
@@ -14,15 +20,21 @@
     animation: fadeIn 5s forwards;
     animation-delay: 1.0s;
     font-size: 1.75vh;
+    margin-bottom: 0;
+    padding-bottom: 10px;
+
 }
 
 .sectionTop {
     width: 100%;
-    height: 100vh;
+    min-height: 100vh;
+    height: 100%;
+
     background-image: url("../img/background2.jpg");
-    overflow: hidden;
+    /*overflow: hidden;*/
     background-size: cover;
     background-position: center;
+
 
 }
 
