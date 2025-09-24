@@ -14,6 +14,12 @@ logOutButton.style.display = 'none';
 
 checkifLoggedIn();
 
+fetch("/log/getNodeV")
+    .then(res => res.text())
+    .then(d => {
+        document.getElementById("nodeV").innerHTML = `Node Version = ${d} ::::last tested with 22.20.0`;
+    });
+
 
 //Functions
 const appendAlert = (message, type) => {
@@ -239,6 +245,9 @@ document.getElementById("updateData").onclick = function () {
     appendAlert(`Histogram updated: ${prettyDate(val * 1000)}`, 'primary');
     buildTable(val);
 };
+
+
+
 
 
 function buildTable(step) {

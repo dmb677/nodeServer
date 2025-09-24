@@ -159,6 +159,10 @@ module.exports = function (IPPath, logFilePath, userDBpath, debugDump) {
         }
     });
 
+    router.get('/log/getNodeV', (req, res) => {
+        res.send(process.version);
+    });
+
     router.get('/log/Ips', (req, res, next) => {
         if (req.session.user && req.session.admin) {
             fs.readFile(logFile, 'utf8', (err, d) => {

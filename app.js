@@ -202,7 +202,7 @@ exec('hostname -I', (err, stdout, stderr) => {
         console.error(err);
     } else {
         app.listen(port, () => {
-            console.log(`app listening at http://${stdout.trim()}:${port}`);
+            console.log(`app listening at http://${stdout.trim()}:${port} \nnode verions ${process.version}`);
         });
     }
 });
