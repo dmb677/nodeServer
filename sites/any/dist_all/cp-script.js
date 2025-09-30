@@ -17,7 +17,9 @@ checkifLoggedIn();
 fetch("/log/getNodeV")
     .then(res => res.text())
     .then(d => {
-        document.getElementById("nodeV").innerHTML = `Node Version = ${d} ::::last tested with 22.20.0`;
+        document.getElementById("nodeV").innerHTML =
+            `Currently using node: ${d} 
+            <br>Tested with node: v22.20.0`;
     });
 
 
@@ -191,6 +193,13 @@ loginButton.onclick = function () {
 //chart functions
 var myChart;
 
+
+var myURLChart;
+
+
+
+
+
 function prettyDate(dt) {
     var seconds = (dt) / 1000;
     var d = Math.floor(seconds / (3600 * 24));
@@ -264,8 +273,7 @@ function buildTable(step) {
             for (let i = 0; i < d.length; i++) {
                 var stepped = Math.floor(getSecs(d[i].at) / step);
                 maxStep = Math.max(maxStep, stepped);
-                (histogram[stepped.toString()]) ? histogram[stepped.toString()]++: histogram[stepped
-                        .toString()] =
+                (histogram[stepped.toString()]) ? histogram[stepped.toString()]++: histogram[stepped.toString()] =
                     1;
             }
             for (let i = 0; i <= maxStep; i++) {
@@ -297,6 +305,46 @@ function buildTable(step) {
                     }]
                 }
             });
+
+
+            //URL hist
+            const ctxURL = document.getElementById('myURLChart');
+            URLxVals = {};
+            if (myURLChart) {
+                myURLChart.destroy();
+            }
+            fetch('/log/server')
+                .then(res => res.text())
+                .then(d => {
+                    if (d === "You need to be logged in as admin to see this page") {
+                        alert("Not admin");
+                        return;
+                    }
+                    d = JSON.parse('[' + d.slice(0, -1) + ']');
+                    //console.log(d);
+                    for (let i = 0; i < d.length; i++) {
+                        (URLxVals[d[i].URL]) ? URLxVals[d[i].URL]++: URLxVals[d[i].URL] = 1;
+                    }
+
+                    myURLChart = new Chart(ctxURL, {
+                        type: "bar",
+
+                        data: {
+                            labels: Object.keys(URLxVals),
+                            datasets: [{
+                                label: 'URL Hist',
+                                fill: false,
+                                lineTension: 0.3,
+                                backgroundColor: "rgba(0,0,255,1.0)",
+                                borderColor: "rgba(0,0,255,0.1)",
+                                data: Object.values(URLxVals)
+                            }]
+                        }
+                    });
+
+                });
+
+
         });
 }
 

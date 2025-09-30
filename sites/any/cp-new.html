@@ -40,7 +40,7 @@
         <div id="nodeV"></div>
 
         <div id="userStatus">
-            You are: <span id="isLoggedin"></span> as: <b><span id="getUsername">?????</span></b> who is an admin:
+            You are logged in as <b><span id="getUsername">?????</span></b> who is an admin:
             <b><span id="isAdmin">????</span></b>
         </div>
 
@@ -74,8 +74,16 @@
         </div>
 
         <div class="row">
+            <div class="col-12">
+                <h1 class=" mt-5">URL Histogram</h1>
+                <canvas id="myURLChart"></canvas>
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-6">
-                <h1 class=" mt-5">Server Log  <button type="button" class="btn btn-danger" id="updateServerLog">Update</button></h1>
+                <h1 class=" mt-5">Server Log <button type="button" class="btn btn-danger"
+                        id="updateServerLog">Update</button></h1>
                 <div class="container scrollable" id="serverLog">
 
                 </div>
