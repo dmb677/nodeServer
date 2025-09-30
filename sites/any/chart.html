@@ -105,6 +105,7 @@
             .then(res => res.text())
             .then(d => {
                 if (d==="You need to be logged in as admin to see this page") {
+                    alert("Not Available")
                     return;
                 }
                 d = JSON.parse('[' + d.slice(0, -1) + ']');
