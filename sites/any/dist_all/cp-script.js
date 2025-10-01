@@ -68,7 +68,7 @@ function showLoggedin() {
     userStatus.style.visibility = 'visible';
     logOutButton.style.display = 'inline-block';
     loginField.style.display = 'none';
-    buildTable(60);
+    buildTable(600);
     serverRHist.style.display = 'block';
 
     fetch("/log/server")
