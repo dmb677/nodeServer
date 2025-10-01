@@ -64,7 +64,7 @@ cat /etc/nginx/sites-available/$siteURL
 
 ##set up certbot
 ##Before this step confirm DNS is updated
-sudo certbot --nginx -d $siteURL #-d $siteURL2
+sudo certbot --nginx -d $siteURL -d www.$siteURL
 
 
 sudo systemctl reload nginx

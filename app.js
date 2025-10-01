@@ -1,9 +1,5 @@
 //Setup
-const {
-    debug
-} = require('console');
 const fs = require('fs');
-
 
 const website = 'sites/' + process.argv[2];
 if (!fs.existsSync(website + '/.env')) {

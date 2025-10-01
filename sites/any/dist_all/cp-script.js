@@ -261,7 +261,6 @@ document.getElementById("updateData").onclick = function () {
 
 function buildTable(step) {
     var histogram = {};
-    var maxStep = 0;
     fetch('/log/server')
         .then(res => res.text())
         .then(d => {
@@ -271,19 +270,33 @@ function buildTable(step) {
             }
             d = JSON.parse('[' + d.slice(0, -1) + ']');
             for (let i = 0; i < d.length; i++) {
-                var stepped = Math.floor(getSecs(d[i].at) / step);
-                maxStep = Math.max(maxStep, stepped);
+                var stepped = Math.floor(d[i].date / (step * 1000));
                 (histogram[stepped.toString()]) ? histogram[stepped.toString()]++: histogram[stepped.toString()] =
                     1;
             }
-            for (let i = 0; i <= maxStep; i++) {
+
+            var maxStep = Math.max(...Object.keys(histogram).map(Number));
+            var minStep = Math.min(...Object.keys(histogram).map(Number));
+
+            for (let i = minStep; i <= maxStep; i++) {
                 if (!histogram[i.toString()]) {
                     histogram[i.toString()] = 0;
                 }
             }
+
+
+
             var xValues = Object.keys(histogram);
             for (let i = 0; i < xValues.length; i++) {
-                xValues[i] = prettyDate(Number(xValues[i]) * step * 1000);
+                const timestamp = new Date(Number(xValues[i]) * step * 1000);
+                xValues[i] = timestamp.toLocaleString('en-US', {
+                    //weekday: 'short',
+                    //year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
             }
             var yValues = Object.values(histogram);
             const ctx = document.getElementById('myChart');

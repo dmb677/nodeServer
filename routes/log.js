@@ -18,12 +18,14 @@ module.exports = function (IPPath, logFilePath, userDBpath, debugDump) {
     //log paths
     const logFile = logFilePath;
     const logIPFiles = IPPath + "/IPs";
-    console.log(logFile);
 
     if (!fs.existsSync(logIPFiles)) {
         fs.mkdirSync(logIPFiles);
     }
 
+
+    //Does not add restart log
+    /*
     if (fs.existsSync(logFile)) {
         exec("mv " + logFile + " " + logFile + Date.now(), (err, stdout, stderr) => {
             if (err) {
@@ -31,11 +33,8 @@ module.exports = function (IPPath, logFilePath, userDBpath, debugDump) {
             }
         });
     }
-
-
-    //exec("rm " + logFile, (err, stdout, stderr) => {});
     exec("rm " + logIPFiles + "/*", (err, stdout, stderr) => {});
-
+*/
 
     //utils
     function prettyDate(dt) {
@@ -92,6 +91,7 @@ module.exports = function (IPPath, logFilePath, userDBpath, debugDump) {
         res.on('finish', async () => {
             var logData = {
                 "rq": req.reqnum,
+                "date": req.date,
                 "at": prettyDate(req.date - start),
                 "URL": req.orignalURL,
                 "IP": req.simpleIP,
