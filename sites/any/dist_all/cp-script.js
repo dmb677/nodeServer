@@ -336,7 +336,9 @@ function buildTable(step) {
                     d = JSON.parse('[' + d.slice(0, -1) + ']');
                     //console.log(d);
                     for (let i = 0; i < d.length; i++) {
-                        (URLxVals[d[i].URL]) ? URLxVals[d[i].URL]++: URLxVals[d[i].URL] = 1;
+                        if (d[i].err === "None") {
+                            (URLxVals[d[i].URL]) ? URLxVals[d[i].URL]++: URLxVals[d[i].URL] = 1;
+                        }
                     }
 
                     myURLChart = new Chart(ctxURL, {
