@@ -319,47 +319,55 @@ function buildTable(step) {
                 }
             });
 
-
-            //URL hist
             const ctxURL = document.getElementById('myURLChart');
             URLxVals = {};
             if (myURLChart) {
                 myURLChart.destroy();
             }
-            fetch('/log/server')
-                .then(res => res.text())
-                .then(d => {
-                    if (d === "You need to be logged in as admin to see this page") {
-                        alert("Not admin");
-                        return;
+
+            for (let i = 0; i < d.length; i++) {
+                if (d[i].err === "None") {
+                    //(URLxVals[d[i].URL]) ? URLxVals[d[i].URL]++: URLxVals[d[i].URL] = 1;
+                    if (URLxVals[d[i].URL]) {
+                        URLxVals[d[i].URL].count++;
+                        URLxVals[d[i].URL].took += Number(d[i].took.slice(0, -2));
+                    } else {
+                        URLxVals[d[i].URL] = {};
+                        URLxVals[d[i].URL].count = 1;
+                        URLxVals[d[i].URL].took = Number(d[i].took.slice(0, -2));
                     }
-                    d = JSON.parse('[' + d.slice(0, -1) + ']');
-                    //console.log(d);
-                    for (let i = 0; i < d.length; i++) {
-                        if (d[i].err === "None") {
-                            (URLxVals[d[i].URL]) ? URLxVals[d[i].URL]++: URLxVals[d[i].URL] = 1;
-                        }
-                    }
+                }
+            }
+            var counts = Object.keys(URLxVals).map(key => {
+                return URLxVals[key].count;
+            });
+            var tooks = Object.keys(URLxVals).map(key => {
+                return URLxVals[key].took / URLxVals[key].count;
+            });
 
-                    myURLChart = new Chart(ctxURL, {
-                        type: "bar",
+        
+            myURLChart = new Chart(ctxURL, {
+                type: "bar",
 
-                        data: {
-                            labels: Object.keys(URLxVals),
-                            datasets: [{
-                                label: 'URL Hist',
-                                fill: false,
-                                lineTension: 0.3,
-                                backgroundColor: "rgba(0,0,255,1.0)",
-                                borderColor: "rgba(0,0,255,0.1)",
-                                data: Object.values(URLxVals)
-                            }]
-                        }
-                    });
-
-                });
-
-
+                data: {
+                    labels: Object.keys(URLxVals),
+                    datasets: [{
+                        label: 'URL Hist (counts)',
+                        fill: false,
+                        lineTension: 0.3,
+                        backgroundColor: "rgba(0,0,255,1.0)",
+                        borderColor: "rgba(0,0,255,0.1)",
+                        data: counts
+                    }, {
+                        label: 'tooks (average mS)',
+                        fill: false,
+                        lineTension: 0.3,
+                        backgroundColor: "rgba(0,255,0,1.0)",
+                        borderColor: "rgba(0,0,255,0.1)",
+                        data: tooks
+                    }]
+                }
+            });
         });
 }
 
