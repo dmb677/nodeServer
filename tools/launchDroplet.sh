@@ -30,7 +30,7 @@ npm install --prefix /home/server
 servername="wesleyBates" #enter app server names
 port="8089"
 siteURL="wesleybates-graduates.com" #enter new URLs
-siteURL2="www.wesleybates-graduates.com" #enter new URLs
+#siteURL2="www.wesleybates-graduates.com" #enter new URLs
 
 
 ## create .env
@@ -59,7 +59,7 @@ cp /home/server/tools/nginx-site.conf /etc/nginx/sites-available/$siteURL
 sudo ln -s /etc/nginx/sites-available/$siteURL /etc/nginx/sites-enabled/
 sed -i "s/varport/$port/g" /etc/nginx/sites-available/$siteURL
 sed -i "s/varURL1/$siteURL/g" /etc/nginx/sites-available/$siteURL
-sed -i "s/varURL2/$siteURL2/g" /etc/nginx/sites-available/$siteURL
+#sed -i "s/varURL2/$siteURL2/g" /etc/nginx/sites-available/$siteURL
 cat /etc/nginx/sites-available/$siteURL
 
 
@@ -68,4 +68,5 @@ sudo systemctl restart nginx
 
 ##set up certbot
 ##Before this step confirm DNS is updated
-sudo certbot --nginx -d $siteURL -d $siteURL2
+sudo certbot --nginx -d $siteURL #-d $siteURL2
+sudo nginx -t #check ngnix
