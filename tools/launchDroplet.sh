@@ -62,11 +62,11 @@ sed -i "s/varURL1/$siteURL/g" /etc/nginx/sites-available/$siteURL
 #sed -i "s/varURL2/$siteURL2/g" /etc/nginx/sites-available/$siteURL
 cat /etc/nginx/sites-available/$siteURL
 
-
-sudo systemctl reload nginx
-sudo systemctl restart nginx
-
 ##set up certbot
 ##Before this step confirm DNS is updated
 sudo certbot --nginx -d $siteURL #-d $siteURL2
+
+
+sudo systemctl reload nginx
+sudo systemctl restart nginx
 sudo nginx -t #check ngnix
