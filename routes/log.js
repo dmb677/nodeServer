@@ -214,9 +214,13 @@ module.exports = function (IPPath, logFilePath, userDBpath, debugDump) {
                     }
                     for (i = 0; i < Object.keys(ipAddresses).length; i++) {
                         var itemIP = Object.keys(ipAddresses)[i];
-                        tmp = fs.readFileSync(logIPFiles + "/" + itemIP, 'utf8');
-                        tmp = JSON.parse(tmp);
-                        ipAddresses[itemIP].ipData = tmp;
+                        try {
+                            tmp = fs.readFileSync(logIPFiles + "/" + itemIP, 'utf8');
+                            tmp = JSON.parse(tmp);
+                            ipAddresses[itemIP].ipData = tmp;
+                        } catch (e) {
+                            console.log(e);
+                        }
                     }
                     res.send(ipAddresses);
                 }
