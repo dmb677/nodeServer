@@ -219,7 +219,7 @@ module.exports = function (IPPath, logFilePath, userDBpath, debugDump) {
                             tmp = JSON.parse(tmp);
                             ipAddresses[itemIP].ipData = tmp;
                         } catch (e) {
-                            console.log(e);
+                           ipAddresses[itemIP].ipData = "Error in IP Address";
                         }
                     }
                     res.send(ipAddresses);
