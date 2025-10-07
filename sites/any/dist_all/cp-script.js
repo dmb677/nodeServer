@@ -328,13 +328,14 @@ function buildTable(step) {
             for (let i = 0; i < d.length; i++) {
                 if (d[i].err === "None") {
                     //(URLxVals[d[i].URL]) ? URLxVals[d[i].URL]++: URLxVals[d[i].URL] = 1;
-                    if (URLxVals[d[i].URL]) {
-                        URLxVals[d[i].URL].count++;
-                        URLxVals[d[i].URL].took += Number(d[i].took.slice(0, -2));
+                    var simpleURL = d[i].URL.split("?")[0]; //remove all info after ?
+                    if (URLxVals[simpleURL]) {
+                        URLxVals[simpleURL].count++;
+                        URLxVals[simpleURL].took += Number(d[i].took.slice(0, -2));
                     } else {
-                        URLxVals[d[i].URL] = {};
-                        URLxVals[d[i].URL].count = 1;
-                        URLxVals[d[i].URL].took = Number(d[i].took.slice(0, -2));
+                        URLxVals[simpleURL] = {};
+                        URLxVals[simpleURL].count = 1;
+                        URLxVals[simpleURL].took = Number(d[i].took.slice(0, -2));
                     }
                 }
             }
@@ -345,7 +346,7 @@ function buildTable(step) {
                 return URLxVals[key].took / URLxVals[key].count;
             });
 
-        
+
             myURLChart = new Chart(ctxURL, {
                 type: "bar",
 
