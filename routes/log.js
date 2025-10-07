@@ -1,4 +1,4 @@
-module.exports = function (IPPath, logFilePath, userDBpath, debugDump) {
+module.exports = function (params) {
     const express = require('express');
     const router = express.Router();
     const {
@@ -16,25 +16,26 @@ module.exports = function (IPPath, logFilePath, userDBpath, debugDump) {
     const start = Date.now();
 
     //log paths
-    const logFile = logFilePath;
-    const logIPFiles = IPPath + "/IPs";
+    const logFile = params.logFilePath;
+    const logIPFiles = params.IPPath + "/IPs";
 
     if (!fs.existsSync(logIPFiles)) {
         fs.mkdirSync(logIPFiles);
     }
 
 
-    //Does not add restart log
-    /*
-    if (fs.existsSync(logFile)) {
-        exec("mv " + logFile + " " + logFile + Date.now(), (err, stdout, stderr) => {
-            if (err) {
-                console.log(err);
-            }
-        });
+    //delete log if environment variable set
+    if (params.deleteLogOnRestart) {
+        if (fs.existsSync(logFile)) {
+            exec("mv " + logFile + " " + logFile + Date.now(), (err, stdout, stderr) => {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
+        exec("rm " + logIPFiles + "/*", (err, stdout, stderr) => {});
     }
-    exec("rm " + logIPFiles + "/*", (err, stdout, stderr) => {});
-*/
+
 
     //utils
     function prettyDate(dt) {
@@ -106,9 +107,6 @@ module.exports = function (IPPath, logFilePath, userDBpath, debugDump) {
                     console.log(err);
                 }
             });
-            if (debugDump) {
-                console.log(logData);
-            }
             writeIPFile(req.simpleIP);
         });
         next();
@@ -150,7 +148,7 @@ module.exports = function (IPPath, logFilePath, userDBpath, debugDump) {
 
     router.get('/log/userDB', (req, res, next) => {
         if (req.session.user && req.session.admin) {
-            fs.readFile(userDBpath, 'utf8', (err, d) => {
+            fs.readFile(params.userDBpath, 'utf8', (err, d) => {
                 res.setHeader('content-type', 'text/plain');
                 res.send(d);
             });
@@ -161,6 +159,20 @@ module.exports = function (IPPath, logFilePath, userDBpath, debugDump) {
 
     router.get('/log/getNodeV', (req, res) => {
         res.send(process.version);
+    });
+
+    router.get('/log/systemctl', (req, res, next) => {
+        if (req.session.user && req.session.admin) {
+            exec(`systemctl status ${params.servicename}.service | grep active`, (err, stdout, stderr) => {
+                if (err) {
+                    return res.status(400).send('Error Getting systemctl');
+                } else {
+                    res.send(stdout);
+                }
+            });
+        } else {
+            res.send("not logged in");
+        }
     });
 
     router.get('/log/Ips', (req, res, next) => {
@@ -219,7 +231,7 @@ module.exports = function (IPPath, logFilePath, userDBpath, debugDump) {
                             tmp = JSON.parse(tmp);
                             ipAddresses[itemIP].ipData = tmp;
                         } catch (e) {
-                           ipAddresses[itemIP].ipData = "Error in IP Address";
+                            ipAddresses[itemIP].ipData = "Error in IP Address";
                         }
                     }
                     res.send(ipAddresses);

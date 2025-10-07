@@ -10,7 +10,6 @@ require('dotenv').config({
     path: website + '/.env',
     quiet: true
 });
-var debugDump = (process.argv[3] === 'debug');
 
 const app = require('express')();
 
@@ -67,9 +66,15 @@ const sessionVar = session({
     }
 });
 
-//routes
+//routes  //, ,  //, , 
 const authRoutes = require('./routes/auth')(process.env.userDB);
-const logRoutes = require('./routes/log')(process.env.LogIPDB, process.env.logfile, process.env.userDB, debugDump);
+const logRoutes = require('./routes/log')({
+    IPPath: process.env.LogIPDB,
+    logFilePath: process.env.logfile,
+    userDBpath: process.env.userDB,
+    deleteLogOnRestart: process.env.deleteLogOnRestart,
+    servicename: process.env.servicename
+});
 const gameRoutes = require('./routes/game-routes')(process.env.gameDB);
 
 
@@ -83,6 +88,15 @@ const bashDir = __dirname + '/bash';
 //set view engine
 app.set('view engine', 'ejs');
 app.set('views', ejsDir);
+
+//reject invalid URLs
+app.use((req, res, next) => {
+    if (req.url.charAt(0) !== '/') {
+        return res.status(400).send('Invalid URL');
+    }
+    next(); //continue is 
+});
+
 
 
 app.use(sessionVar);
@@ -198,7 +212,9 @@ exec('hostname -I', (err, stdout, stderr) => {
         console.error(err);
     } else {
         app.listen(port, () => {
-            console.log(`app listening at http://${stdout.trim()}:${port} \nnode verions ${process.version}`);
+            console.log(
+                `app listening at http://${stdout.trim()}:${port} \nnode verions ${process.version}`
+            );
         });
     }
 });

@@ -23,6 +23,14 @@ fetch("/log/getNodeV")
     });
 
 
+fetch("/log/systemctl")
+    .then(res => res.text())
+    .then(d => {
+        document.getElementById("systemctl").innerHTML =
+            `${d}`;
+    });
+
+
 //Functions
 const appendAlert = (message, type) => {
     const uuid = Date.now();

@@ -6,7 +6,7 @@
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node app.js DieWhenYouDie2025",
+        "DieWhenYouDie2025": "node app.js DieWhenYouDie2025",
         "nodeUpdate": "tools/updateNVM.sh"
     },
     "dependencies": {
