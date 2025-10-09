@@ -1,8 +1,21 @@
 @media screen and (max-width: 768px) {
-        .leftAuto {
-            border: none; /* or border: 0; */
-        }
+    .leftAuto {
+        border: none;
+        /* or border: 0; */
     }
+}
+
+.my-custom-table-background {
+    background-color: #be4848;
+    opacity: 0.9;
+    /* A shade of green */
+}
+
+.my-custom-table-side {
+    background-color: #8f8a8a;
+    opacity: 0.95;
+    /* A shade of green */
+}
 
 .smartSize-1 {
     font-size: 4vh;
