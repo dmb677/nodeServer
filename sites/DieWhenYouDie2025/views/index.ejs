@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<%- include('partials/head.ejs',{title:'DieWhenYouDie'}) %>
+
+<body onload="beginAnimation()">
+    <section class="sectionTop">
+        <div class="container smartPad" style="height: 100%;">
+            <div class="row smartPad">
+                <div class="col-lg-3"></div>
+                <div class="col-lg-6 fw-bold">
+
+                    <span id="demo"></span>
+                    <br>
+                    <div class="text-center">
+                        <span id="demo2"></span>
+                    </div>
+                </div>
+                <div class="col-lg-3"></div>
+            </div>
+            <div class="row smartPad">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-10 text-center" id="dieWhenYouDie">
+                    <span class="">💀</span><span class="fw-bold">DieWhenYouDie</span><span class="box">💀</span>
+                    <br><span class="fw-bold">2025</span>
+                    <br><span class="">October 25th</span>
+                    <br>
+                    <p class="text-center smartPad"><a
+                            href="https://signal.group/#CjQKIN9PI1Hb0JFQKFc5LcKqsX-zB0iO9unZKoYa9jcKsdOjEhDXc8D1_yaX5u44UWjy_cnU">
+                            Join the Signal Group
+                            <br>
+                            <img class="signal text-center" src="/dist/img/signalQR.png" />
+                        </a>
+                    </p>
+                </div>
+                <div class="col-lg-1"></div>
+            </div>
+            <div class="row smartPad">
+                <div class="col-1g-12 text-center"><span id="fastForward"
+                        class="footer">>></span>
+                </div>
+            </div>
+            <%- include('partials/footer.ejs') %>
+        </div>
+
+    </section>
+    <script src="./dist/js/myscript.js"></script>
+</body>
+
+</html>

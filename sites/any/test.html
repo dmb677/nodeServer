@@ -1,0 +1,11 @@
+<script>
+    fetch("/get-diag-data")
+        .then(res => res.text())
+        .then(d => {
+            console.log(d);
+            console.log(JSON.parse(d));
+        });
+</script>
+
+
+<h1>Test Page</h1>

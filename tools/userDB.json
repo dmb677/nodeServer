@@ -1,0 +1,9 @@
+{
+    "danny": {
+        "name": "danny",
+        "email": "danny.m.bates@gmail",
+        "password": "rosawas#1",
+        "password_confirm": "rosawas#1",
+        "admin": true
+    }
+}

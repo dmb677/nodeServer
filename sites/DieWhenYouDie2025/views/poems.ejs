@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<%- include('partials/head.ejs',{title:'POEMS'}) %>
+
+<body>
+    <section class="sectionTop">
+
+        <div class="container smartPad" style="height: 100%;">
+            <div class="row smartPad">
+                <div class="col-lg-3"></div>
+                <div class="col-lg-6">
+                    <p class="fw-bold smartSize-1">
+                        POEMS
+                    </p>
+                    <p class="fw-bold smartSize-3">
+                        <a href="/poems/deathManifesto">
+                            DEATH - A Manifesto
+                        </a>
+                    </p>
+                      <p class="fw-bold smartSize-3">
+                        <a href="/poems/cadaver">
+                            CADAVER
+                        </a>
+                    </p>
+                     <p class="fw-bold smartSize-3">
+                        <a href="/poems/deathHaiku">
+                            Death Haiku
+                        </a>
+                    </p>
+                </div>
+                <div class="col-lg-3"></div>
+            </div>
+            <%- include('partials/footer.ejs') %>
+        </div>
+
+    </section>
+</body>
+
+</html>

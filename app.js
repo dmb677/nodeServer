@@ -1,9 +1,5 @@
 //Setup
-const {
-    debug
-} = require('console');
 const fs = require('fs');
-
 
 const website = 'sites/' + process.argv[2];
 if (!fs.existsSync(website + '/.env')) {
@@ -11,9 +7,9 @@ if (!fs.existsSync(website + '/.env')) {
     process.exit();
 }
 require('dotenv').config({
-    path: website + '/.env'
+    path: website + '/.env',
+    quiet: true
 });
-var debugDump = (process.argv[3] === 'debug');
 
 const app = require('express')();
 
@@ -70,9 +66,15 @@ const sessionVar = session({
     }
 });
 
-//routes
+//routes  //, ,  //, , 
 const authRoutes = require('./routes/auth')(process.env.userDB);
-const logRoutes = require('./routes/log')(process.env.LogIPDB, process.env.logfile, process.env.userDB, debugDump);
+const logRoutes = require('./routes/log')({
+    IPPath: process.env.LogIPDB,
+    logFilePath: process.env.logfile,
+    userDBpath: process.env.userDB,
+    deleteLogOnRestart: process.env.deleteLogOnRestart,
+    servicename: process.env.servicename
+});
 const gameRoutes = require('./routes/game-routes')(process.env.gameDB);
 
 
@@ -86,6 +88,15 @@ const bashDir = __dirname + '/bash';
 //set view engine
 app.set('view engine', 'ejs');
 app.set('views', ejsDir);
+
+//reject invalid URLs
+app.use((req, res, next) => {
+    if (req.url.charAt(0) !== '/') {
+        return res.status(400).send('Invalid URL');
+    }
+    next(); //continue is 
+});
+
 
 
 app.use(sessionVar);
@@ -137,11 +148,6 @@ app.post('/upload-log-delete/:del', (req, res) => {
     res.end();
 });
 
-
-app.get('/', (req, res) => {
-    res.render('index');
-});
-
 app.get('/b/tag/:id', (req, res, next) => {
     // see if file exits fs.statSync()
     if (true) {
@@ -178,16 +184,20 @@ app.all('/api/:id', (req, res) => {
     });
 });
 
-app.get('*', (req, res) => {
+
+app.get('/', (req, res) => {
+    res.render('index');
+});
+
+
+app.use((req, res) => {
     var theURL = req.url.replace(/^\//, '').replace(/\.+/g, '');
     res.render(theURL, {}, (err, html) => {
         if (err) {
             req.hasError = true;
-
-            res.render('error', {
+            res.status(404).render('error', {
                 message: req.url
             });
-            res.end();
         } else {
             res.send(html);
         }
@@ -202,7 +212,9 @@ exec('hostname -I', (err, stdout, stderr) => {
         console.error(err);
     } else {
         app.listen(port, () => {
-            console.log(`app listening at http://${stdout.trim()}:${port}`);
+            console.log(
+                `app listening at http://${stdout.trim()}:${port} \nnode verions ${process.version}`
+            );
         });
     }
 });

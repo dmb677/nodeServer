@@ -3,8 +3,8 @@ Description=Website-Node Service
 
 [Service]
 User=root
-WorkingDirectory=/home/die
-ExecStart=node app.js
+WorkingDirectory=/home/server
+ExecStart=node app.js varservername
 Restart=always
 RestartSec=3
 
