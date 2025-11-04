@@ -4,9 +4,9 @@ module.exports = function (params) {
     const fs = require('fs'); // 
     const fsp = require('fs').promises;
     const http = require('http');
-
-    const computername = "";
     const start = Date.now();
+
+    let computername = "";
     let reqnum = 0;
 
     exec("hostname")

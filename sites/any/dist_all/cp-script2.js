@@ -15,46 +15,53 @@ logOutButton.style.display = 'none';
 const UPDATE_nodeV = document.getElementById("UPDATE-nodeV");
 const UPDATE_systemctl = document.getElementById("UPDATE-systemctl");
 
+updateData();
 
-checkifLoggedIn();
+function updateData() {
+    const fetchTime = Date.now();
+    fetch('/auth/isLoggedin')
+        .then(res => res.text())
+        .then(d => {
+            if (d === 'true') {
+                showLoggedin();
+                return fetch("/get-diag-data");
+            } else {
+                showLoggedout();
+                throw new Error('You Are Not Logged in');
+            }
+        })
+        .then(res => res.text())
+        .then(d => {
+            appendAlert(`Fetch took ${Date.now() - fetchTime}ms`, 'primary');
+            d = JSON.parse(d);
 
-var fetchTime = Date.now();
-fetch("/get-diag-data")
-    .then(res => res.text())
-    .then(d => {
-        console.log(`Fetch took ${Date.now() - fetchTime}ms`);
-        d = JSON.parse(d);
-        //console.log(d);
-
-        UPDATE_nodeV.innerHTML =
-            `Currently using node: ${d.Node} 
+            UPDATE_nodeV.innerHTML =
+                `Currently using node: ${d.Node} 
             <br>Tested with node: v22.20.0`;
 
-        UPDATE_systemctl.innerHTML =
-            `<br>${d.command}`;
+            UPDATE_systemctl.innerHTML =
+                `<br>${d.command}`;
 
-        serverLog.innerHTML = `<pre>${JSON.stringify(d.log, null, 2)}</pre>`;
+            serverLog.innerHTML = `<pre>${JSON.stringify(d.log, null, 2)}</pre>`;
+            document.getElementById("ipLog").innerHTML = `<pre>${JSON.stringify(d.IPs, null, 2)}</pre>`;
+            document.getElementById("userDB").innerHTML = `<pre>${JSON.stringify(d.Users, null, 2)}</pre>`;
 
-        document.getElementById("ipLog").innerHTML = `<pre>${JSON.stringify(d.IPs, null, 2)}</pre>`;
+            let failedUrls = d.log.filter(d => {
+                //console.log(d.URL)
+                return d.err === 'URL Not Found\n';
+            });
+            failedUrls = failedUrls.map(d => {
+                return `${d.URL} by ${d.IP}`;
+            });
 
-        document.getElementById("userDB").innerHTML = `<pre>${JSON.stringify(d.Users, null, 2)}</pre>`;
-
-
-
-        let failedUrls = d.log.filter(d => {
-            //console.log(d.URL)
-            return d.err === 'URL Not Found\n';
+            document.getElementById("failedUrls").innerHTML = `<pre>${JSON.stringify(failedUrls, null, 2)}</pre>`;
+            buildTable(600, d.log);
+        })
+        .catch(error => {
+            appendAlert(error, 'primary');
         });
-        failedUrls = failedUrls.map(d => {
-            return `${d.URL} by ${d.IP}`;
-        });
 
-        document.getElementById("failedUrls").innerHTML = `<pre>${JSON.stringify(failedUrls, null, 2)}</pre>`;
-
-        buildTable(600, d.log);
-    });
-
-
+}
 
 //Functions
 const appendAlert = (message, type) => {
@@ -119,20 +126,6 @@ function showLoggedout() {
 }
 
 
-function checkifLoggedIn() {
-    fetch('/auth/isLoggedin')
-        .then(res => res.text())
-        .then(d => {
-            if (d === 'true') {
-                showLoggedin();
-
-            } else {
-                appendAlert('You Are Not Logged in', 'primary');
-                showLoggedout();
-
-            }
-        });
-}
 
 
 
@@ -185,7 +178,7 @@ loginButton.onclick = function () {
 
                 case "You Are logged IN":
                     appendAlert('You Are Now Logged in', 'primary');
-                    showLoggedin();
+                    updateData();
                     break;
             }
 
@@ -194,7 +187,13 @@ loginButton.onclick = function () {
 
 };
 
-
+document.getElementById("updateData").onclick = function () {
+    let val = document.getElementById("newStepSize").value;
+    val = getSecs(val);
+    document.getElementById("newStepSize").value = prettyDate(val * 1000);
+    appendAlert(`Histogram updated: ${prettyDate(val * 1000)}`, 'primary');
+    updateData();
+};
 
 
 //chart functions
@@ -254,13 +253,7 @@ function getSecs(str) {
 }
 
 
-document.getElementById("updateData").onclick = function () {
-    var val = document.getElementById("newStepSize").value;
-    val = getSecs(val);
-    document.getElementById("newStepSize").value = prettyDate(val * 1000);
-    appendAlert(`Histogram updated: ${prettyDate(val * 1000)}`, 'primary');
-    buildTable(val);
-};
+
 
 
 
@@ -293,8 +286,8 @@ function histogrammer(data, step) {
 
 
 function buildTable(step, d) {
-    var tableDate = Date.now();
-    const histogram = histogrammer(d.map(t => t.date), 1*60*1000);
+    const tableDate = Date.now();
+    const histogram = histogrammer(d.map(t => t.date), 1 * 60 * 1000);
     const counts = histogram.map(d => d.count);
     const dates = histogram.map(d => {
         const timestamp = d.binStart;
@@ -383,102 +376,3 @@ function buildTable(step, d) {
         }
     });
 }
-
-/*
-    var histogram = {};
-    for (let i = 0; i < d.length; i++) {
-        var stepped = Math.floor(d[i].date / (step * 1000));
-        (histogram[stepped.toString()]) ? histogram[stepped.toString()]++: histogram[stepped.toString()] =
-            1;
-    }
-
-    var maxStep = Math.max(...Object.keys(histogram).map(Number));
-    var minStep = Math.min(...Object.keys(histogram).map(Number));
-
-    for (let i = minStep; i <= maxStep; i++) {
-        if (!histogram[i.toString()]) {
-            histogram[i.toString()] = 0;
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////
-    // New Binning Method
-    ////////////////////////////////////////////////////////////////////////
-
-   
-
-
-    /*
-    const binnedHistogram = d.map(t => t.date).reduce((accumulator, currentValue) => {
-        const bin = Math.floor(currentValue / step2) * step2; // Determine the lower bound of the bin
-        //const binLabel = `${bin}-${bin + step - 1}`; // Create a label for the bin
-        let binLabel = new Date(bin);
-        binLabel = binLabel.toLocaleString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        accumulator[binLabel] = (accumulator[binLabel] || 0) + 1;
-        return accumulator;
-    }, {});
-
-    //sortedEntries = Object.entries(binnedHistogram).sort((a, b) => b[1] - a[1]);
-    //console.log(sortedEntries);
-
-*/
-/*
-
-    var xValues = Object.keys(histogram);
-    for (let i = 0; i < xValues.length; i++) {
-        const timestamp = new Date(Number(xValues[i]) * step * 1000);
-        xValues[i] = timestamp.toLocaleString('en-US', {
-            //weekday: 'short',
-            //year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-    var yValues = Object.values(histogram);
-
-    
-
-    const ctx = document.getElementById('myChart');
-    if (myChart) {
-        myChart.destroy();
-    }
-    myChart = new Chart(ctx, {
-        type: "bar",
-
-        data: {
-            labels: xValues,
-            datasets: [{
-                label: 'Number of requests',
-                fill: false,
-                lineTension: 0.3,
-                backgroundColor: "rgba(0,0,255,1.0)",
-                borderColor: "rgba(0,0,255,0.1)",
-                data: yValues,
-            }]
-        }
-    });
-
-    
-
-}
-
-
-
-/*
-
-   
-
-    const alertTrigger = document.getElementById('liveAlertBtn')
-    if (alertTrigger) {
-        alertTrigger.addEventListener('click', () => {
-            appendAlert('Nice, you triggered this alert message!', 'success')
-        })
-    }
-    */

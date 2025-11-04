@@ -1,4 +1,5 @@
 //Setup
+const pkg = require('./package.json');
 const fs = require('fs');
 
 const website = 'sites/' + process.argv[2];
@@ -12,15 +13,9 @@ require('dotenv').config({
 });
 
 const app = require('express')();
-
-const {
-    exec
-} = require('child_process');
-
-
+const exec = require('util').promisify(require('child_process').exec);
 const multer = require('multer');
 const path = require('path');
-
 const JSONdb = require('simple-json-db');
 const imageLog = new JSONdb(process.env.imagePath + '/imageLog.json');
 
@@ -204,17 +199,18 @@ app.use((req, res) => {
     });
 });
 
-
-
 //Start up app
-exec('hostname -I', (err, stdout, stderr) => {
-    if (err) {
-        console.error(err);
-    } else {
+exec('hostname -I')
+    .then(d => {
         app.listen(port, () => {
             console.log(
-                `app listening at http://${stdout.trim()}:${port} \nnode verions ${process.version}`
+                `node requirements: ${pkg.engines.node}\nnode version: ${process.version}`);
+
+            console.log(
+                `app listening at http://${d.stdout.trim()}:${port}`
             );
         });
-    }
-});
+    })
+    .catch(error => {
+        console.log("Could not get hostname: " + error);
+    });
