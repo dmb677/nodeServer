@@ -5,18 +5,17 @@
         "node": ">= 22.20.0"
     },
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "DieWhenYouDie2025": "node app.js DieWhenYouDie2025",
+        "test": "node app.js DieWhenYouDie & node app.js DieWhenYouDie2025 & node app.js e112025 & node app.js wesleyBates",
         "nodeUpdate": "tools/updateNVM.sh"
     },
     "dependencies": {
         "child_process": "^1.0.2",
-        "dotenv": "^17.2.2",
-        "ejs": "^3.1.10",
-        "express": "^5.1.0",
-        "express-session": "^1.18.0",
+        "dotenv": "^17.4.2",
+        "ejs": "^5.0.2",
+        "express": "^5.2.1",
+        "express-session": "^1.19.0",
         "fs": "^0.0.1-security",
-        "multer": "^2.0.2",
+        "multer": "^2.1.1",
         "session-file-store": "^1.5.0",
         "simple-json-db": "^2.0.0"
     }

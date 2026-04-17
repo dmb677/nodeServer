@@ -27,11 +27,6 @@ module.exports = function (params) {
     const logFile = logFilePath;
     const logIPFiles = IPPath + "/IPs";
 
-
-    //log paths
-    //const logFile = params.logFilePath;
-    //const logIPFiles = params.IPPath + "/IPs";
-
     if (!fs.existsSync(logIPFiles)) {
         fs.mkdirSync(logIPFiles);
     }
