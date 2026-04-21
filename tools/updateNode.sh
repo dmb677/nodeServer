@@ -36,3 +36,7 @@ echo "You may need to reload bash"
 #list services
 #ls /etc/systemd/system
 #journalctl -u <service> -f
+
+echo "Checking for node module update"
+npm outdated
+echo "run 'npm update' to update to latest semver"
