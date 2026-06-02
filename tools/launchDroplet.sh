@@ -1,23 +1,12 @@
 
+#!/bin/bash
 
-## software to install
-lsb_release -a
-sudo apt update
-sudo apt upgrade
-sudo apt install nodejs npm -y
-sudo apt install nginx -y
-sudo apt install net-tools -y
-sudo apt install certbot python3-certbot-nginx -y
-
-#setup ufw
-sudo ufw allow OpenSSH
-sudo ufw allow 'Nginx Full'
-sudo ufw allow ssh
-sudo ufw enable
-npm install --prefix /home/server
+#example usage: launchDroplet.sh "wesleyBates" "8080" "wesleybates-graduates.com"
 
 
-website-setup() {
+
+
+
 
     ## create .env
     cp /home/server/tools/example.env /home/server/sites/$1/.env
@@ -57,7 +46,7 @@ website-setup() {
     sudo systemctl restart nginx
     sudo nginx -t #check ngnix
 
-}
+
 
 
 
@@ -67,4 +56,3 @@ website-setup() {
 #siteURL="wesleybates-graduates.com" #enter new URLs
 #siteURL2="www.wesleybates-graduates.com" #enter new URLs
 
-website-setup "wesleyBates" "8080" "wesleybates-graduates.com"
