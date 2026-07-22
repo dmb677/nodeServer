@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Die When You Die 2026</title>
+    <style>
+        :root {
+            background: #080808;
+            color: #f5f5f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body,
+        html {
+            height: 100%;
+            overflow: hidden;
+            font-family: Inter, system-ui, sans-serif;
+            background: #060606;
+        }
+
+        #splash {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #080808;
+            z-index: 10;
+        }
+
+        #skull {
+            position: relative;
+            width: 220px;
+            height: 260px;
+            animation: shake 1.2s ease-in-out forwards;
+        }
+
+        #skull::before,
+        #skull::after {
+            content: '';
+            position: absolute;
+            background: #f5f3f0;
+            border-radius: 50%;
+        }
+
+        #skull::before {
+            width: 180px;
+            height: 180px;
+            top: 0;
+            left: 20px;
+            border-bottom-left-radius: 120px;
+            border-bottom-right-radius: 120px;
+        }
+
+        #skull::after {
+            width: 120px;
+            height: 130px;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 0 0 60px 60px;
+        }
+
+        .eye {
+            position: absolute;
+            width: 44px;
+            height: 58px;
+            background: #080808;
+            border-radius: 50% 50% 40% 40%;
+            top: 70px;
+            box-shadow: 0 0 0 8px #f5f3f0 inset;
+        }
+
+        .eye.left {
+            left: 44px;
+            transform: rotate(-10deg);
+        }
+
+        .eye.right {
+            right: 44px;
+            transform: rotate(10deg);
+        }
+
+        .nose {
+            position: absolute;
+            top: 138px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            width: 22px;
+            height: 22px;
+            background: #080808;
+            border-radius: 0 50% 50% 50%;
+        }
+
+        .teeth {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .tooth {
+            width: 18px;
+            height: 28px;
+            background: #080808;
+            border-radius: 8px;
+        }
+
+        .crack {
+            position: absolute;
+            width: 6px;
+            height: 80px;
+            background: #f5f3f0;
+            top: 20px;
+            left: 108px;
+            transform: rotate(15deg);
+            box-shadow: 0 0 0 2px #080808;
+            animation: crackMove 0.8s ease-in-out forwards;
+        }
+
+        .crack::before,
+        .crack::after {
+            content: '';
+            position: absolute;
+            background: #f5f3f0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .crack::before {
+            top: 18px;
+            left: -8px;
+        }
+
+        .crack::after {
+            top: 46px;
+            left: 2px;
+        }
+
+        @keyframes crackMove {
+            0% {
+                transform: translateX(0) rotate(15deg);
+                opacity: 1;
+            }
+
+            70% {
+                transform: translateX(22px) translateY(-18px) rotate(35deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(44px) translateY(-38px) rotate(55deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes shake {
+            0% {
+                transform: scale(0.9);
+            }
+
+            20% {
+                transform: scale(1.02) rotate(-6deg);
+            }
+
+            40% {
+                transform: scale(0.98) rotate(6deg);
+            }
+
+            60% {
+                transform: scale(1.04) rotate(-4deg);
+            }
+
+            80% {
+                transform: scale(0.98) rotate(4deg);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .hidden {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .4s ease, visibility .4s ease;
+        }
+
+        #content {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .8s ease 0.2s, visibility 0s linear .8s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            flex-direction: column;
+            text-align: center;
+            padding: 24px;
+        }
+
+        #content.show {
+            opacity: 1;
+            visibility: visible;
+            transition-delay: 0s;
+        }
+
+        h1 {
+            font-size: clamp(2.4rem, 5vw, 5rem);
+            margin-bottom: .6rem;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        p {
+            max-width: 650px;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #d6d3d0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="splash">
+        <div id="skull">
+            <div class="eye left"></div>
+            <div class="eye right"></div>
+            <div class="nose"></div>
+            <div class="teeth">
+                <div class="tooth"></div>
+                <div class="tooth"></div>
+                <div class="tooth"></div>
+                <div class="tooth"></div>
+            </div>
+            <div class="crack"></div>
+        </div>
+    </div>
+    <div id="content">
+
+        <p>Why is existence so painful?</p>
+        <p>Couldn't I just be put away and stored. Forgotten and Silent</p>
+        <p>Like a pack of Ramen noodles that fell behind the fridge.</p>
+        <h1>DieWhenYouDie 2026</h1>
+        <p>Every day we go on, thinking and feeling and hurting.</p>
+        <p>Looking forward to the great escape. The glorious release</p>
+        <p>Death will embrace us with a sigh of relief</p>
+    </div>
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('splash').classList.add('hidden');
+                document.getElementById('content').classList.add('show');
+            }, 2600);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,177 @@
+@media screen and (max-width: 768px) {
+    .leftAuto {
+        border: none;
+        /* or border: 0; */
+    }
+}
+
+.my-custom-table-background {
+    background-color: #be4848;
+    opacity: 0.9;
+    /* A shade of green */
+}
+
+.my-custom-table-side {
+    background-color: #8f8a8a;
+    opacity: 0.95;
+    /* A shade of green */
+}
+
+.smartSize-1 {
+    font-size: 4vh;
+    overflow: hidden;
+}
+
+.smartSize-3 {
+    font-size: 1.55vh;
+    font-weight: bolder;
+    overflow: hidden;
+}
+
+.footer {
+    opacity: 0;
+    animation: fadeIn 5s forwards;
+    animation-delay: 1.0s;
+    font-size: 1.75vh;
+    margin-bottom: 0;
+    padding-bottom: 10px;
+
+}
+
+.sectionTop {
+    width: 100%;
+    min-height: 100vh;
+    height: 100%;
+
+    background-image: url("../img/background2.jpg");
+    /*overflow: hidden;*/
+    background-size: cover;
+    background-position: center;
+
+
+}
+
+a {
+    color: black;
+    text-decoration: none;
+    font-size: 1.75vh;
+}
+
+a:hover {
+    color: rgb(117, 47, 47);
+    text-decoration: none;
+}
+
+a:active {
+    color: rgb(31, 21, 21);
+    text-decoration: none;
+}
+
+.smartPad {
+    padding-top: 2vh;
+}
+
+.nervous {
+    animation:
+        breath 2.5s ease-in-out infinite;
+}
+
+#dieWhenYouDie {
+    display: none;
+    font-size: 3vh;
+    overflow: hidden;
+    animation: fadeIn 3s forwards;
+}
+
+
+#demo {
+    overflow: hidden;
+    font-size: 2.5vh;
+}
+
+#demo2 {
+    overflow: hidden;
+    font-size: 3vh;
+}
+
+.signal {
+    height: 150px;
+    width: auto;
+}
+
+.box {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    /* Needed for transform origin */
+    animation: fall-and-rattle 5s ease-in-out forwards;
+    /* 2 seconds duration, stays at end state */
+    transform-origin: 30% 85%;
+    /* Sets the pivot point for the rotation */
+    animation-delay: 3.0s;
+}
+
+@keyframes fall-and-rattle {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(200deg);
+    }
+
+    50% {
+        transform: rotate(160deg);
+    }
+
+    60% {
+        transform: rotate(190deg);
+    }
+
+    70% {
+        transform: rotate(170deg);
+    }
+
+    80% {
+        transform: rotate(185deg);
+    }
+
+    90% {
+        transform: rotate(175deg);
+    }
+
+    100% {
+        transform: rotate(180deg);
+    }
+}
+
+
+@keyframes breath {
+    0% {
+        transform: scale(1);
+        /* Initial size */
+    }
+
+    50% {
+        transform: scale(1.2);
+        /* Slightly larger (inhale) */
+    }
+
+    100% {
+        transform: scale(1);
+        /* Return to initial size (exhale) */
+    }
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        /* Start with fully transparent text */
+    }
+
+    100% {
+        opacity: 1;
+        /* End with fully opaque text */
+    }
+}

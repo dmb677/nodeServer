@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>DieWhenYouDie2026</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: #000;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            /*text-align: center; */
+            flex-direction: column; 
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .first-letter {
+            font-size: 2em;
+        }
+
+        .capitalized {
+            text-transform: uppercase;
+        }
+
+        #content {
+            
+            font-size: 1.5vh;
+        }
+
+        #bottom {
+            animation: skull-drop 3s ease forwards;
+            animation-delay: 3s;
+        }
+
+        #skull {
+            position: absolute;
+            left: 50%;
+            top: 0px;
+            /* center horizontally using transform (translate is not a valid CSS property) */
+            transform: translate(-50%, 0);
+            opacity: 0;
+            font-size: 1vh;
+            pointer-events: none;
+            animation: skull-drop 3s ease forwards;
+            animation-delay: 3s;
+        }
+
+
+
+        @keyframes skull-drop {
+            0% {
+                transform: translate(0, -100vh);
+                opacity: 0;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(0, 0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+    <div id="content">
+        <p><span class="first-letter">W</span>hy is existence so painful?</p>
+        <p>Couldn't I just be put away and stored. Forgotten and Silent</p>
+        <p>Like a pack of Ramen noodles that fell behind the fridge</p>
+        <br>
+
+        ---------------
+
+        <p><span class="first-letter">E</span>very day filled with thinking and feeling and hurting
+        <p>
+
+        <p>Life is <span class="capitalized">Relentless</span> </p>
+        ---------------
+        <p><span class="first-letter">D</span>ear <span class="capitalized">Mictlāntēcutli</span> ...please make it stop
+        </p>
+        <p>Looking forward to the great escape. That glorious sleep</p>
+        <p>Death will embrace us as we sigh with relief</p>
+        <br>
+
+    </div>
+
+    <div id="bottom">
+       
+        <h1>DieWhenYouDie 2026</h1>
+        <h3 class="capitalized">November 7</h3>
+        <br>
+
+
+        <div id="skull-content">please dafd <img src="skull.png" alt="Skull"></div>
+    </div>
+    </div>
+</body>
+
+</html>
