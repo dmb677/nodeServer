@@ -111,7 +111,9 @@ cat ~/.ssh/id_ed25519.pub
 
 git clone git@github.com:dmb677/nodeServer.git /home/nodeServer.git
 npm install --prefix /home/nodeServer.git
-/home/nodeServer.git/launchDroplet.sh "DieWhenYouDie2026" "8080" "DieWhenYouDie.org"
+/home/nodeServer.git/tools/launchDroplet.sh "DieWhenYouDie2026" "8080" "DieWhenYouDie.org"
+/home/nodeServer.git/tools/launchDroplet.sh "DieWhenYouDie2025" "8081" "2025.DieWhenYouDie.org"
+/home/nodeServer.git/tools/launchDroplet.sh "DieWhenYouDie" "8082" "2024.DieWhenYouDie.org"
 
 
 
