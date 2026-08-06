@@ -4,9 +4,9 @@ module.exports = function (params) {
     const fs = require('fs'); // 
     const fsp = require('fs').promises;
     const http = require('http');
-
-    const computername = "";
     const start = Date.now();
+
+    let computername = "";
     let reqnum = 0;
 
     exec("hostname")
@@ -26,11 +26,6 @@ module.exports = function (params) {
     } = params;
     const logFile = logFilePath;
     const logIPFiles = IPPath + "/IPs";
-
-
-    //log paths
-    //const logFile = params.logFilePath;
-    //const logIPFiles = params.IPPath + "/IPs";
 
     if (!fs.existsSync(logIPFiles)) {
         fs.mkdirSync(logIPFiles);
@@ -95,7 +90,7 @@ module.exports = function (params) {
     }
 
     function readIPFiles(d) {
-        var ipAddresses = {};
+        let ipAddresses = {};
         for (i = 0; i < d.length; i++) {
             var item = d[i];
             if (!ipAddresses[item.IP]) {
@@ -137,7 +132,8 @@ module.exports = function (params) {
         }
         const promiseArray = [];
         for (i = 0; i < Object.keys(ipAddresses).length; i++) {
-            var itemIP = Object.keys(ipAddresses)[i];
+            let itemIP = Object.keys(ipAddresses)[i];
+
             /*
             try {
                 tmp = fs.readFileSync(logIPFiles + "/" + itemIP, 'utf8');
@@ -147,10 +143,11 @@ module.exports = function (params) {
                 ipAddresses[itemIP].ipData = "Error in IP Address";
             }
                 */
-            var tmp = fsp.readFile(logIPFiles + "/" + itemIP, 'utf8')
+            let tmp = fsp.readFile(logIPFiles + "/" + itemIP, 'utf8')
                 .then((d) => {
                     d = JSON.parse(d);
                     ipAddresses[itemIP].ipData = d;
+
                 })
                 .catch(error => {
                     ipAddresses[itemIP].ipData = "Error in IP Address";
@@ -160,7 +157,7 @@ module.exports = function (params) {
         }
 
         return Promise.all(promiseArray)
-            .then(results => {
+            .then(() => {
                 return ipAddresses;
             })
             .catch(error => {
@@ -206,8 +203,9 @@ module.exports = function (params) {
             //var ret = "{";
             ret = {};
 
-            //var cc = `systemctl status ${params.servicename}.service | grep active`;
-            var cc = `ls -l`;
+            var cc =
+                `systemctl show ${params.servicename}.service --property=ActiveState,ActiveEnterTimestamp`;
+            //var cc = `ls -l`;
 
             const getCommand = exec(cc)
                 .then((d) => {

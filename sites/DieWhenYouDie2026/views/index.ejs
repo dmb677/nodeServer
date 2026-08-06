@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Die When You Die</title>
+    <script>
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        a:link {
+            color: #f5d4db;
+            text-decoration: none;
+        }
+
+        a:visited {
+            color: #f5d4db;
+            text-decoration: none;
+        }
+
+        .page {
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .page:nth-child(odd) {
+            background: #111827;
+        }
+
+        .page:nth-child(even) {
+            background: linear-gradient(115deg, #580606, #070001);
+        }
+
+        .center-element {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .next-btn {
+            flex: 1;
+            width: 100%;
+            padding: 0.9rem 0.5rem;
+            border: none;
+            border-radius: 999px;
+            background: #cfcfcf;
+            color: #20488d;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .inactive {
+            opacity: 0.5;
+            pointer-events: none;
+            background: #7c7c7c;
+        }
+
+        .btn-container {
+            padding-top: 5vh;
+            width: 75vw;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease, transform 1s ease;
+        }
+
+        .btn-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .divider {
+            margin: 0 0;
+            padding: 2vh 0;
+            text-align: center;
+        }
+
+        .first-letter {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #8f4747;
+        }
+
+        .capitalized {
+            text-transform: uppercase;
+        }
+
+        .message {
+            width: 75vw;
+            font-size: 1.2em;
+            padding-left: 1vw;
+            padding-right: 1vw;
+            color: white;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease, transform 1s ease;
+        }
+
+        .message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .no-transition {
+            transition: none !important;
+            animation: none !important;
+        }
+
+        /* Splash Screen Styles */
+        .splash {
+            position: fixed;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            background: #111827;
+            overflow: hidden;
+            z-index: 10;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .splash.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .splash-image {
+            width: min(42vw, 320px);
+            max-width: 320px;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.2));
+            animation: splash-breathe 2.4s ease-in-out infinite;
+            user-select: none;
+        }
+
+        @keyframes splash-breathe {
+
+            0%,
+            100% {
+                transform: scale(0.98) translateY(0);
+                opacity: 0.92;
+            }
+
+            50% {
+                transform: scale(1.04) translateY(-6px);
+                opacity: 1;
+            }
+        }
+
+        .mictl-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        .mictl {
+            width: min(22vw, 320px);
+            max-width: 320px;
+            filter: drop-shadow(0 0 25px rgba(219, 65, 4, 0.603));
+            user-select: none;
+            animation: splash-breathe 2.4s ease-in-out infinite;
+        }
+
+        .qr-code {
+            width: min(30vw, 700px);
+            max-width: 700px;
+        }
+
+        .prayer {
+            text-transform: lowercase;
+            width: 100%;
+            font-size: 0.65em;
+            font-weight: 400;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .wide {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="page" id="page1">
+        <div class="splash" id="splash">
+            <img class="splash-image" src="/dist/img/skull2.png" alt="Loading" />
+        </div>
+        <div class="message" id="message1">
+            <p><span class="first-letter">W</span>hy is existence so painful?</p>
+            <p>Couldn't I just be put away and stored. Forgotten and Silent</p>
+            <p>Like a pack of Ramen noodles that fell behind the fridge</p>
+            <p class="divider">-- 💀 --</p>
+        </div>
+        <div class="message" id="message2">
+            <p>It's all so <span class="capitalized first-letter">Relentless</span> </p>
+            <p><span class="first-letter">E</span>very moment filled with thinking and feeling and hurting </p>
+        </div>
+        <div class="btn-container" id="button1">
+            <button class="next-btn inactive" type="button" data-target="page1">Top</button>
+            <button class="next-btn" type="button" data-target="page2">Prayer</button>
+            <button class="next-btn" type="button" data-target="page3">RSVP</button>
+        </div>
+    </section>
+    <section class="page" id="page2">
+        <div class="message" id="message3">
+            <p><span class="first-letter">D</span>ear <span class="capitalized first-letter">Mictlāntēcutli</span>
+            </p>
+            <p>hear the words of my mouth</p>
+        </div>
+        <div class="message wide" id="message4">
+            <div class="mictl-container">
+                <img class="mictl" src="dist/img/mict2.png" alt="Skull">
+            </div>
+            <div class="prayer">
+                <p>Take me away to your windowless home.</p>
+                <p>The ninth level of gloom. The realm with the obsidian winds and jaguar infested valleys</p>
+                <p>Mountains that clash together and Gods that fight over piles of bones</p>
+                <p>The dead are fed to the jaguars and the jaguars are fed to the Gods</p>
+                <p>And Death finally embraces us as we let out one giant sigh of relief</p>
+            </div>
+        </div>
+        <div class="btn-container" id="button2">
+            <button class="next-btn" type="button" data-target="page1">Top</button>
+            <button class="next-btn inactive" type="button" data-target="page2">Prayer</button>
+            <button class="next-btn" type="button" data-target="page3">RSVP</button>
+        </div>
+    </section>
+    <section class="page" id="page3">
+        <div class="message" id="message5">
+            <p><span class="capitalized first-letter">DIEWHENYOUDIE ⚫ 2026</span></p>
+            <p>November 7, 2026</p>
+            <div class="mictl-container">
+                <a
+                    href="https://signal.group/#CjQKIEg6tyzBqnYQVoLrueabtSALF7qkzNYqbFqwUEBGX5C7EhAIV3O9MbbbBne86HzHNnL9">
+                    <div><img class="qr-code" src="dist/img/qr-code.png" alt="Skull"></div>
+                </a>
+                <a
+                    href="https://signal.group/#CjQKIEg6tyzBqnYQVoLrueabtSALF7qkzNYqbFqwUEBGX5C7EhAIV3O9MbbbBne86HzHNnL9">
+                    <div>RSVP via Signal</div>
+                </a>
+            </div>
+        </div>
+        <div class="btn-container" id="button3">
+            <button class="next-btn" type="button" data-target="page1">Top</button>
+            <button class="next-btn" type="button" data-target="page2">Prayer</button>
+            <button class="next-btn inactive" type="button" data-target="page3">RSVP</button>
+        </div>
+    </section>
+    <script>
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        const d1 = 1000;
+        const d2 = 2000;
+        document.querySelectorAll('.next-btn').forEach((button) => {
+            button.addEventListener('click', () => {
+                const targetId = button.getAttribute('data-target');
+                const target = document.getElementById(targetId);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+                if (typeof window[targetId] === "function") {
+                    window[targetId]();
+                }
+            });
+        });
+
+        function clearMessages() {
+            document.querySelectorAll('.message').forEach((m) => {
+                m.classList.add('no-transition');
+                m.offsetHeight;
+                m.classList.remove('show');
+                m.offsetHeight;
+                m.classList.remove('no-transition');
+            });
+        };
+
+        function page1() {
+            clearMessages();
+            delay(500).then(() => {
+                document.getElementById('splash').classList.add('hidden');
+                document.getElementById('message1').classList.add('show');
+                return delay(d1);
+            }).then(() => {
+                document.getElementById('message2').classList.add('show');
+                return delay(d1);
+            }).then(() => {
+                document.getElementById('button1').classList.add('show');
+            });
+        }
+
+        function page2() {
+            clearMessages();
+            delay(500).then(() => {
+                document.getElementById('message3').classList.add('show');
+                return delay(d1);
+            }).then(() => {
+                document.getElementById('message4').classList.add('show');
+                return delay(d1);
+            }).then(() => {
+                document.getElementById('button2').classList.add('show');
+            });
+        }
+
+        function page3() {
+            clearMessages();
+            delay(500).then(() => {
+                document.getElementById('message5').classList.add('show');
+                return delay(d1);
+            }).then(() => {
+                document.getElementById('button3').classList.add('show');
+            });
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('page1').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+            delay(3000).then(() => {
+                page1();
+            })
+        });
+    </script>
+</body>
+
+</html>
