@@ -118,3 +118,11 @@ npm install --prefix /home/nodeServer.git
 #############update droplet for existing site############
 git -C /home/nodeServer.git pull
 systemctl restart DieWhenYouDie2026.service
+
+
+
+########Squash commits##############
+git reset --soft HEAD~N
+git add .
+git commit -a -m "squashed"
+git push --force-with-lease
