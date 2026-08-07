@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Simple Canvas Game</title>
+  <style>
+    /* This styles the page around the canvas. */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: clamp(12px, 4vw, 40px);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(1.85rem, 6vw, 2.75rem);
+      line-height: 1.05;
+    }
+
+    #hud {
+      margin-bottom: 12px;
+      font-size: clamp(15px, 4vw, 20px);
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    #gameWrap {
+      width: min(100%, 720px);
+      background: #222;
+      padding: clamp(8px, 2.5vw, 15px);
+      border-radius: 10px;
+      border: 2px solid #444;
+      display: inline-block;
+    }
+
+    canvas {
+      display: block;
+      width: min(100%, 640px);
+      height: auto;
+      max-width: 100%;
+      background: #000;
+      border: 2px solid #fff;
+      image-rendering: auto;
+    }
+
+    .mobile-controls {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .mobile-controls button {
+      min-width: 92px;
+      min-height: 48px;
+      border: 0;
+      border-radius: 12px;
+      background: #00f5ff;
+      color: #071018;
+      font-size: 20px;
+      font-weight: 900;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .mobile-controls button:active,
+    .mobile-controls button.touched {
+      background: #ffffff;
+      transform: scale(0.96);
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 10px;
+      }
+
+      h1 {
+        max-width: 100%;
+      }
+
+      #gameWrap {
+        width: min(100%, 640px);
+        padding: 8px;
+      }
+
+      canvas {
+        border-width: 1px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Survive the Falling Blocks</h1>
+
+  <div id="hud">
+    Score: <span id="score">0</span> | Best: <span id="bestScore">0</span>
+  </div>
+
+  <div id="gameWrap">
+    <!-- The canvas is the drawing area for the game. -->
+    <canvas id="gameCanvas" width="640" height="480"></canvas>
+  </div>
+
+  <div class="mobile-controls">
+    <button id="upButton" aria-label="Move up">▲</button>
+    <div style="display: flex; gap: 16px; justify-content: center;">
+      <button id="leftButton" aria-label="Move left">◀</button>
+      <button id="rightButton" aria-label="Move right">▶</button>
+    </div>
+    <button id="downButton" aria-label="Move down">▼</button>
+  </div>
+
+  <script>
+    // Get the drawing surface and 2D drawing API.
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const playerImage = new Image();
+    playerImage.src = '/dist/img/skull2.png';
+
+    // Read the HUD elements so we can update score text.
+    const scoreText = document.getElementById('score');
+    const bestScoreText = document.getElementById('bestScore');
+
+    // Keep the top score in localStorage if the browser supports it.
+    const bestScoreKey = 'simpleGameBestScore';
+    const storedBest = Number(localStorage.getItem(bestScoreKey)) || 0;
+
+    // Store score and best score.
+    let score = 0;
+    let bestScore = storedBest;
+
+    // The player's rectangle.
+    const player = {
+
+      width: 134,
+      height: 134,
+      x: 300,
+      y: 300,
+      speed: 260
+    };
+
+    // Keys that are currently being pressed.
+    const keys = {
+      left: false,
+      right: false,
+      up: false,
+      down: false
+    };
+
+    // This array holds each falling block.
+    let blocks = [];
+
+    // This holds the timestamp used to control the animation loop.
+    let lastFrameTime = 0;
+
+    // Time between block spawns.
+    let spawnTimer = 0;
+
+    // A flag that tells the game loop if the round is over.
+    let gameOver = false;
+
+    // Update the HUD to show the current score.
+    function updateHud() {
+      scoreText.textContent = Math.floor(score);
+      bestScoreText.textContent = Math.floor(bestScore);
+    }
+
+    function drawHeart(x, y, width, height) {
+      const cx = x + width / 2;
+      const cy = y + height / 2;
+      const topY = y + height * 0.05;
+      const bottomY = y + height;
+      const leftX = x;
+      const rightX = x + width;
+
+      ctx.beginPath();
+      ctx.moveTo(cx, bottomY);
+      ctx.bezierCurveTo(
+        rightX + width * 0.24,
+        bottomY - height * 0.20,
+        rightX,
+        cy + height * 0.12,
+        cx,
+        topY
+      );
+      ctx.bezierCurveTo(
+        leftX,
+        cy + height * 0.12,
+        leftX - width * 0.24,
+        bottomY - height * 0.20,
+        cx,
+        bottomY
+      );
+      ctx.closePath();
+      ctx.fillStyle = '#ff4444';
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = Math.max(2, width * 0.05);
+      ctx.stroke();
+    }
+
+    // Reset the game back to the starting values.
+    function resetGame() {
+      score = 0;
+      blocks = [];
+      spawnTimer = 0;
+      gameOver = false;
+      player.x = canvas.width / 2 - player.width / 2;
+      player.y = 300;
+      updateHud();
+    }
+
+    // Draw the playing field and all visible objects.
+    function draw() {
+      // Fill the canvas with black background.
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw a simple grid background.
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      // Draw the player using the skull image asset.
+      if (playerImage.complete) {
+        ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+      } else {
+        ctx.fillStyle = '#00f5ff';
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+      }
+
+      // Draw every falling block as a heart.
+      for (const block of blocks) {
+        ctx.fillStyle = '#ff4444';
+        drawHeart(block.x, block.y, block.width, block.height);
+      }
+
+      // If the game has ended, draw a translucent overlay and "Game Over" text.
+      if (gameOver) {
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 40px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2 - 20);
+        ctx.font = '20px Arial';
+        ctx.fillText('Press Space to restart', canvas.width / 2, canvas.height / 2 + 20);
+      }
+    }
+
+    // Move the player based on the active control keys.
+    function updatePlayer(deltaSeconds) {
+      if (keys.left) {
+        player.x -= player.speed * deltaSeconds;
+      }
+
+      if (keys.right) {
+        player.x += player.speed * deltaSeconds;
+      }
+
+      if (keys.up) {
+        player.y -= player.speed * deltaSeconds;
+      }
+
+      if (keys.down) {
+        player.y += player.speed * deltaSeconds;
+      }
+
+      // Keep the player inside the canvas.
+      player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+      player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
+    }
+
+    // Create a new block at a random x position.
+    function spawnBlock() {
+      const size = 24 + Math.random() * 10;
+      const block = {
+        x: 10 + Math.random() * (canvas.width - size - 20),
+        y: -size,
+        width: size,
+        height: size,
+        speed: 180 + Math.random() * 60
+      };
+
+      blocks.push(block);
+    }
+
+    // Update falling blocks and check collisions.
+    function updateBlocks(deltaSeconds) {
+      // Move blocks down.
+      for (const block of blocks) {
+        block.y += block.speed * deltaSeconds;
+      }
+
+      // Remove blocks that fell off the screen.
+      blocks = blocks.filter(block => block.y < canvas.height + 50);
+
+      // If a block collides with the player, end the game.
+      for (const block of blocks) {
+        const hit =
+          player.x < block.x + block.width &&
+          player.x + player.width > block.x &&
+          player.y < block.y + block.height &&
+          player.y + player.height > block.y;
+
+        if (hit) {
+          gameOver = true;
+          if (score > bestScore) {
+            bestScore = score;
+            localStorage.setItem(bestScoreKey, String(bestScore));
+          }
+        }
+      }
+    }
+
+    // This is the main game loop. It runs over and over.
+    function gameLoop(timestamp = 0) {
+      const delta = timestamp - lastFrameTime;
+      const deltaSeconds = delta / 1000 || 0;
+      lastFrameTime = timestamp;
+
+      if (!gameOver) {
+        updatePlayer(deltaSeconds);
+        score += deltaSeconds * 10;
+
+        spawnTimer -= delta;
+        if (spawnTimer <= 0) {
+          spawnBlock();
+          spawnTimer = 625 + Math.random() * 250;
+        }
+
+        updateBlocks(deltaSeconds);
+        updateHud();
+      }
+
+      draw();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    const leftButton = document.getElementById('leftButton');
+    const rightButton = document.getElementById('rightButton');
+    const upButton = document.getElementById('upButton');
+    const downButton = document.getElementById('downButton');
+
+    function pressControl(control, value) {
+      if (control === leftButton) {
+        keys.left = value;
+        control.classList.toggle('touched', value);
+      }
+
+      if (control === rightButton) {
+        keys.right = value;
+        control.classList.toggle('touched', value);
+      }
+
+      if (control === upButton) {
+        keys.up = value;
+        control.classList.toggle('touched', value);
+      }
+
+      if (control === downButton) {
+        keys.down = value;
+        control.classList.toggle('touched', value);
+      }
+    }
+
+    leftButton.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      pressControl(leftButton, true);
+    });
+
+    leftButton.addEventListener('pointerup', event => {
+      event.preventDefault();
+      pressControl(leftButton, false);
+    });
+
+    leftButton.addEventListener('pointercancel', event => {
+      event.preventDefault();
+      pressControl(leftButton, false);
+    });
+
+    leftButton.addEventListener('pointerleave', event => {
+      pressControl(leftButton, false);
+    });
+
+    rightButton.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      pressControl(rightButton, true);
+    });
+
+    rightButton.addEventListener('pointerup', event => {
+      event.preventDefault();
+      pressControl(rightButton, false);
+    });
+
+    rightButton.addEventListener('pointercancel', event => {
+      event.preventDefault();
+      pressControl(rightButton, false);
+    });
+
+    rightButton.addEventListener('pointerleave', event => {
+      pressControl(rightButton, false);
+    });
+
+    upButton.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      pressControl(upButton, true);
+    });
+
+    upButton.addEventListener('pointerup', event => {
+      event.preventDefault();
+      pressControl(upButton, false);
+    });
+
+    upButton.addEventListener('pointercancel', event => {
+      event.preventDefault();
+      pressControl(upButton, false);
+    });
+
+    upButton.addEventListener('pointerleave', event => {
+      pressControl(upButton, false);
+    });
+
+    downButton.addEventListener('pointerdown', event => {
+      event.preventDefault();
+      pressControl(downButton, true);
+    });
+
+    downButton.addEventListener('pointerup', event => {
+      event.preventDefault();
+      pressControl(downButton, false);
+    });
+
+    downButton.addEventListener('pointercancel', event => {
+      event.preventDefault();
+      pressControl(downButton, false);
+    });
+
+    downButton.addEventListener('pointerleave', event => {
+      pressControl(downButton, false);
+    });
+
+    // Listen for keyboard input.
+    window.addEventListener('keydown', event => {
+      const key = event.key.toLowerCase();
+
+      if (event.key === 'ArrowLeft' || key === 'a') {
+        keys.left = true;
+      }
+
+      if (event.key === 'ArrowRight' || key === 'd') {
+        keys.right = true;
+      }
+
+      if (event.key === 'ArrowUp' || key === 'w') {
+        keys.up = true;
+      }
+
+      if (event.key === 'ArrowDown' || key === 's') {
+        keys.down = true;
+      }
+
+      // Space starts a new game after a game over.
+      if (event.key === ' ' && gameOver) {
+        event.preventDefault();
+        resetGame();
+      }
+    });
+
+    window.addEventListener('keyup', event => {
+      const key = event.key.toLowerCase();
+
+      if (event.key === 'ArrowLeft' || key === 'a') {
+        keys.left = false;
+      }
+
+      if (event.key === 'ArrowRight' || key === 'd') {
+        keys.right = false;
+      }
+
+      if (event.key === 'ArrowUp' || key === 'w') {
+        keys.up = false;
+      }
+
+      if (event.key === 'ArrowDown' || key === 's') {
+        keys.down = false;
+      }
+    });
+
+    // Start the game as soon as the page script loads.
+    resetGame();
+    spawnBlock();
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
