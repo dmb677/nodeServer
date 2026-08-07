@@ -73,6 +73,88 @@
       display: inline-block;
     }
 
+    #scoresButton {
+      margin: 14px auto 0;
+      padding: 12px 26px;
+      border: 0;
+      border-radius: 10px;
+      background: #00f5ff;
+      color: #071018;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      padding: 14px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(420px, 100%);
+      background: #222;
+      border: 2px solid #fff;
+      border-radius: 16px;
+      padding: 24px;
+      color: #fff;
+      text-align: center;
+    }
+
+    .modal-card h2 {
+      margin: 0 0 14px;
+      font-size: 28px;
+    }
+
+    .modal-card label {
+      display: block;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .modal-card input {
+      width: min(100%, 260px);
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 12px;
+      color: #111;
+    }
+
+    .modal-card .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .modal-card button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    #saveNameButton {
+      background: #00f5ff;
+      color: #071018;
+    }
+
+    #cancelNameButton {
+      background: #666;
+      color: #fff;
+    }
+
     .mobile-controls {
       display: flex;
       gap: 12px;
@@ -150,6 +232,19 @@
     <!-- The canvas is the drawing area for the game. -->
     <canvas id="gameCanvas" width="640" height="480"></canvas>
     <button id="restartButton">Restart</button>
+    <button id="scoresButton">Scores</button>
+  </div>
+
+  <div id="nameModal" class="modal-overlay">
+    <div class="modal-card">
+      <h2>You Died</h2>
+      <label for="nameInput">Enter your name</label>
+      <input id="nameInput" type="text" autocomplete="off" maxlength="24" />
+      <div class="modal-actions">
+        <button id="saveNameButton">Save</button>
+        <button id="cancelNameButton">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <div class="mobile-controls">
@@ -173,6 +268,11 @@
     const scoreText = document.getElementById('score');
     const bestScoreText = document.getElementById('bestScore');
     const restartButton = document.getElementById('restartButton');
+    const scoresButton = document.getElementById('scoresButton');
+    const nameModal = document.getElementById('nameModal');
+    const nameInput = document.getElementById('nameInput');
+    const saveNameButton = document.getElementById('saveNameButton');
+    const cancelNameButton = document.getElementById('cancelNameButton');
 
     // Keep the top score in localStorage if the browser supports it.
     const bestScoreKey = 'simpleGameBestScore';
@@ -260,6 +360,21 @@
     function hideRestartButton() {
       restartButton.classList.remove('visible');
       restartButton.style.display = 'none';
+    }
+
+    function openNameModal() {
+      if (nameModal) {
+        nameModal.classList.add('open');
+        nameModal.style.display = 'flex';
+        setTimeout(() => nameInput.focus(), 0);
+      }
+    }
+
+    function closeNameModal() {
+      if (nameModal) {
+        nameModal.classList.remove('open');
+        nameModal.style.display = 'none';
+      }
     }
 
     // Reset the game back to the starting values.
@@ -381,6 +496,7 @@
         if (hit) {
           gameOver = true;
           showRestartButton();
+          openNameModal();
           if (score > bestScore) {
             bestScore = score;
             localStorage.setItem(bestScoreKey, String(bestScore));
@@ -415,7 +531,41 @@
     }
 
     restartButton.addEventListener('click', () => {
+      closeNameModal();
       resetGame();
+    });
+
+    scoresButton.addEventListener('click', () => {
+      window.location.href = '/game/scores';
+    });
+
+    saveNameButton.addEventListener('click', () => {
+      const name = nameInput.value.trim() || 'Anonymous';
+      const currentScore = Math.floor(score);
+      const scoreboard = JSON.parse(localStorage.getItem('simpleGameNames') || '[]');
+      scoreboard.push({ name, score: currentScore });
+
+      localStorage.setItem('simpleGameNames', JSON.stringify(scoreboard));
+
+      fetch('/game/saveScore', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name,
+          score: currentScore
+        })
+      }).catch(error => {
+        console.error('Could not save score:', error);
+      });
+
+      closeNameModal();
+    });
+
+    cancelNameButton.addEventListener('click', () => {
+      nameInput.value = '';
+      closeNameModal();
     });
 
     const leftButton = document.getElementById('leftButton');

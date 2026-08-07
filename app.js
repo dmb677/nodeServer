@@ -96,6 +96,7 @@ app.use((req, res, next) => {
 
 app.use(sessionVar);
 app.use(logRoutes);
+app.use((require('express')).json());
 app.use((require('express')).static(httpdocs));
 app.use((require('express')).static(httpdocsAny));
 app.use((require('express')).static(process.env.imagePath));
@@ -117,7 +118,6 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 });
 
-app.use((require('express')).json());
 app.post('/upload-log', (req, res) => {
 
     imageLog.set(Date.now(), {
