@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Simple Canvas Game</title>
+  <title>Die When You Die 2026</title>
   <style>
     /* This styles the page around the canvas. */
     * {
@@ -56,17 +56,44 @@
       image-rendering: auto;
     }
 
+    #restartButton {
+      display: none;
+      margin: 14px auto 0;
+      padding: 12px 26px;
+      border: 0;
+      border-radius: 10px;
+      background: #ff4444;
+      color: white;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    #restartButton.visible {
+      display: inline-block;
+    }
+
     .mobile-controls {
       display: flex;
-      gap: 16px;
+      gap: 12px;
       justify-content: center;
       align-items: center;
       margin-top: 14px;
       flex-wrap: wrap;
     }
 
+    .mobile-controls .dpad {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(52px, 64px));
+      grid-template-rows: repeat(3, minmax(44px, 52px));
+      gap: 8px;
+      align-items: center;
+      justify-items: center;
+    }
+
     .mobile-controls button {
-      min-width: 92px;
+      width: min(92px, 20vw);
+      min-width: 48px;
       min-height: 48px;
       border: 0;
       border-radius: 12px;
@@ -76,6 +103,9 @@
       font-weight: 900;
       cursor: pointer;
       touch-action: manipulation;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .mobile-controls button:active,
@@ -83,6 +113,11 @@
       background: #ffffff;
       transform: scale(0.96);
     }
+
+    #upButton { grid-column: 2; grid-row: 1; }
+    #leftButton { grid-column: 1; grid-row: 2; }
+    #rightButton { grid-column: 3; grid-row: 2; }
+    #downButton { grid-column: 2; grid-row: 3; }
 
     @media (max-width: 640px) {
       body {
@@ -105,7 +140,7 @@
   </style>
 </head>
 <body>
-  <h1>Survive the Falling Blocks</h1>
+  <h1>Death comes for us all</h1>
 
   <div id="hud">
     Score: <span id="score">0</span> | Best: <span id="bestScore">0</span>
@@ -114,15 +149,16 @@
   <div id="gameWrap">
     <!-- The canvas is the drawing area for the game. -->
     <canvas id="gameCanvas" width="640" height="480"></canvas>
+    <button id="restartButton">Restart</button>
   </div>
 
   <div class="mobile-controls">
-    <button id="upButton" aria-label="Move up">▲</button>
-    <div style="display: flex; gap: 16px; justify-content: center;">
+    <div class="dpad">
+      <button id="upButton" aria-label="Move up">▲</button>
       <button id="leftButton" aria-label="Move left">◀</button>
       <button id="rightButton" aria-label="Move right">▶</button>
+      <button id="downButton" aria-label="Move down">▼</button>
     </div>
-    <button id="downButton" aria-label="Move down">▼</button>
   </div>
 
   <script>
@@ -136,6 +172,7 @@
     // Read the HUD elements so we can update score text.
     const scoreText = document.getElementById('score');
     const bestScoreText = document.getElementById('bestScore');
+    const restartButton = document.getElementById('restartButton');
 
     // Keep the top score in localStorage if the browser supports it.
     const bestScoreKey = 'simpleGameBestScore';
@@ -215,6 +252,16 @@
       ctx.stroke();
     }
 
+    function showRestartButton() {
+      restartButton.classList.add('visible');
+      restartButton.style.display = 'inline-block';
+    }
+
+    function hideRestartButton() {
+      restartButton.classList.remove('visible');
+      restartButton.style.display = 'none';
+    }
+
     // Reset the game back to the starting values.
     function resetGame() {
       score = 0;
@@ -223,6 +270,7 @@
       gameOver = false;
       player.x = canvas.width / 2 - player.width / 2;
       player.y = 300;
+      hideRestartButton();
       updateHud();
     }
 
@@ -265,14 +313,13 @@
 
       // If the game has ended, draw a translucent overlay and "Game Over" text.
       if (gameOver) {
+        showRestartButton();
         ctx.fillStyle = 'rgba(0,0,0,0.6)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 40px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2 - 20);
-        ctx.font = '20px Arial';
-        ctx.fillText('Press Space to restart', canvas.width / 2, canvas.height / 2 + 20);
       }
     }
 
@@ -333,6 +380,7 @@
 
         if (hit) {
           gameOver = true;
+          showRestartButton();
           if (score > bestScore) {
             bestScore = score;
             localStorage.setItem(bestScoreKey, String(bestScore));
@@ -365,6 +413,10 @@
 
       requestAnimationFrame(gameLoop);
     }
+
+    restartButton.addEventListener('click', () => {
+      resetGame();
+    });
 
     const leftButton = document.getElementById('leftButton');
     const rightButton = document.getElementById('rightButton');
