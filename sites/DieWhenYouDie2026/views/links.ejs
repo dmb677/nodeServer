@@ -6,55 +6,84 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Links - Die When You Die 2026</title>
     <style>
+        * { box-sizing: border-box; }
+
         body {
             font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
             line-height: 1.6;
             margin: 0;
             padding: 0;
             background: #111;
-            color: #eee
+            color: #eee;
         }
 
         .container {
             max-width: 900px;
-            margin: 48px auto;
-            padding: 24px
+            margin: 0 auto;
+            padding: 24px 16px 48px;
         }
 
         a {
-            color: #7bd389
+            color: #7bd389;
+            text-decoration: none;
+            word-break: break-word;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
 
         header h1 {
             margin: 0 0 8px;
-            font-size: 28px
+            font-size: clamp(1.8rem, 6vw, 2.5rem);
+            line-height: 1.2;
         }
 
         .card {
             background: #0e0e0e;
             border: 1px solid #1a1a1a;
             padding: 16px;
-            border-radius: 8px
+            border-radius: 12px;
+            margin-top: 20px;
         }
 
         ul.links {
             list-style: none;
             padding: 0;
-            margin: 0
+            margin: 0;
         }
 
         ul.links li {
             padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03)
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         ul.links li:last-child {
-            border-bottom: 0
+            border-bottom: 0;
         }
 
         .meta {
             color: #999;
-            font-size: 13px
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 18px 12px 32px;
+            }
+
+            .card {
+                padding: 14px 12px;
+            }
+
+            header h1 {
+                margin-bottom: 6px;
+            }
+
+            ul.links li {
+                padding: 10px 0;
+            }
         }
     </style>
 </head>
@@ -101,6 +130,17 @@
                     <a href="/poem">Sample Poem</a>
                     <div class="meta">....just some poetry</div>
                 </li>
+                <li>
+                    <a href="/game">Death Game</a>
+                    <div class="meta">See how long you can survive</div>
+                </li>
+
+                <li>
+                    <a href="/fortune">Get your Fortune Read</a>
+                    <div class="meta">Death is in store</div>
+                </li>
+
+
             </ul>
         </section>
 

@@ -61,7 +61,7 @@ const sessionVar = session({
     }
 });
 
-//routes  //, ,  //, , 
+//routes  
 const authRoutes = require('./routes/auth')(process.env.userDB);
 const logRoutes = require('./routes/log')({
     IPPath: process.env.LogIPDB,
@@ -71,7 +71,7 @@ const logRoutes = require('./routes/log')({
     servicename: process.env.servicename
 });
 const gameRoutes = require('./routes/game-routes')(process.env.gameDB);
-
+const fortuneRoutes = require('./routes/fortune')(process.env.fortunesDB);
 
 const port = process.env.port;
 const httpdocs = __dirname + '/' + website + '/httpdocs/';
@@ -102,7 +102,7 @@ app.use((require('express')).static(httpdocsAny));
 app.use((require('express')).static(process.env.imagePath));
 app.use('/auth', authRoutes);
 app.use('/game', gameRoutes);
-
+app.use('/f', fortuneRoutes);
 /** 
 app.get('/upload', async (request, response) => {
     response.sendFile(__dirname + '/upload.html');

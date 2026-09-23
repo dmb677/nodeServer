@@ -88,7 +88,7 @@
             padding-top: 5vh;
             width: 75vw;
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 10px;
             opacity: 0;
             transform: translateY(20px);
@@ -229,6 +229,7 @@
             <button class="next-btn inactive" type="button" data-target="page1">Top</button>
             <button class="next-btn" type="button" data-target="page2">Prayer</button>
             <button class="next-btn" type="button" data-target="page3">RSVP</button>
+            <button class="next-btn" type="button" data-target="links">Links</button>
         </div>
     </section>
     <section class="page" id="page2">
@@ -253,6 +254,7 @@
             <button class="next-btn" type="button" data-target="page1">Top</button>
             <button class="next-btn inactive" type="button" data-target="page2">Prayer</button>
             <button class="next-btn" type="button" data-target="page3">RSVP</button>
+            <button class="next-btn" type="button" data-target="links">Links</button>
         </div>
     </section>
     <section class="page" id="page3">
@@ -275,6 +277,7 @@
             <button class="next-btn" type="button" data-target="page1">Top</button>
             <button class="next-btn" type="button" data-target="page2">Prayer</button>
             <button class="next-btn inactive" type="button" data-target="page3">RSVP</button>
+            <button class="next-btn" type="button" data-target="links">Links</button>
         </div>
     </section>
     <script>
@@ -284,6 +287,10 @@
         document.querySelectorAll('.next-btn').forEach((button) => {
             button.addEventListener('click', () => {
                 const targetId = button.getAttribute('data-target');
+                if (targetId === 'links') {
+                    window.location.href = '/links';
+                    return;
+                }
                 const target = document.getElementById(targetId);
                 if (target) {
                     target.scrollIntoView({
