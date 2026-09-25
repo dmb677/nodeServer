@@ -23,6 +23,12 @@ function getSites() {
 function getPort(site) {
     const envPath = path.join(sitesDir, site, '.env');
     const config = dotenv.parse(fs.readFileSync(envPath));
+    const emptyVariables = Object.keys(config).filter((key) => config[key].trim() === '');
+
+    if (emptyVariables.length > 0) {
+        throw new Error(`Missing or empty value for environment variable(s) ${emptyVariables.join(', ')} in ${path.relative(rootDir, envPath)}.`);
+    }
+
     const port = Number(config.port);
 
     if (!Number.isInteger(port) || port < 1 || port > 65535) {
