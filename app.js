@@ -71,7 +71,9 @@ const logRoutes = require('./routes/log')({
     servicename: process.env.servicename
 });
 const gameRoutes = require('./routes/game-routes')(process.env.gameDB);
-const fortuneRoutes = require('./routes/fortune')(process.env.fortunesDB);
+const fortuneRoutes = process.env.fortunesDB
+    ? require('./routes/fortune')(process.env.fortunesDB)
+    : null;
 
 const port = process.env.port;
 const httpdocs = __dirname + '/' + website + '/httpdocs/';
@@ -102,7 +104,9 @@ app.use((require('express')).static(httpdocsAny));
 app.use((require('express')).static(process.env.imagePath));
 app.use('/auth', authRoutes);
 app.use('/game', gameRoutes);
-app.use('/f', fortuneRoutes);
+if (fortuneRoutes) {
+    app.use('/f', fortuneRoutes);
+}
 /** 
 app.get('/upload', async (request, response) => {
     response.sendFile(__dirname + '/upload.html');
@@ -202,14 +206,20 @@ app.use((req, res) => {
 //Start up app
 exec('hostname -I')
     .then(d => {
-        app.listen(port, () => {
+        const onListening = () => {
             console.log(
                 `node requirements: ${pkg.engines.node}\nnode version: ${process.version}`);
 
             console.log(
                 `app listening at http://${d.stdout.trim().split(' ')[0]}:${port}`
             );
-        });
+        };
+
+        if (process.env.NODE_SERVER_HOST) {
+            app.listen(port, process.env.NODE_SERVER_HOST, onListening);
+        } else {
+            app.listen(port, onListening);
+        }
     })
     .catch(error => {
         console.log("Could not get hostname: " + error);
