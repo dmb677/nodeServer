@@ -6,6 +6,20 @@ const dotenv = require('dotenv');
 
 const rootDir = path.resolve(__dirname, '..');
 const sitesDir = path.join(rootDir, 'sites');
+const requiredEnvVariables = [
+    'port',
+    'sessionName',
+    'sessionSecret',
+    'clearSessions',
+    'sessionLife',
+    'sessionDB',
+    'userDB',
+    'LogIPDB',
+    'logfile',
+    'gameDB',
+    'fortunesDB',
+    'imagePath'
+];
 const startupTimeoutMs = 30_000;
 const requestTimeoutMs = 1_500;
 const children = [];
@@ -23,10 +37,15 @@ function getSites() {
 function getPort(site) {
     const envPath = path.join(sitesDir, site, '.env');
     const config = dotenv.parse(fs.readFileSync(envPath));
+    const missingVariables = requiredEnvVariables.filter((key) => !(key in config));
     const emptyVariables = Object.keys(config).filter((key) => config[key].trim() === '');
 
-    if (emptyVariables.length > 0) {
-        throw new Error(`Missing or empty value for environment variable(s) ${emptyVariables.join(', ')} in ${path.relative(rootDir, envPath)}.`);
+    if (missingVariables.length > 0 || emptyVariables.length > 0) {
+        const problems = [
+            ...missingVariables.map((key) => `${key} (not declared)`),
+            ...emptyVariables.map((key) => `${key} (empty value)`)
+        ];
+        throw new Error(`Invalid environment variable(s) in ${path.relative(rootDir, envPath)}: ${problems.join(', ')}.`);
     }
 
     const port = Number(config.port);
