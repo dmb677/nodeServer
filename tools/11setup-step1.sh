@@ -19,12 +19,3 @@ git clone git@github.com:dmb677/nodeServer.git /home/nodeServer.git
 
 npm install --prefix /home/nodeServer.git
 
-/home/nodeServer.git/tools/siteSetup.sh "DieWhenYouDie2026" "8080" "DieWhenYouDie.org"
-/home/nodeServer.git/tools/siteSetup.sh "DieWhenYouDie2025" "8081" "2025.DieWhenYouDie.org"
-/home/nodeServer.git/tools/siteSetup.sh "DieWhenYouDie" "8082" "2024.DieWhenYouDie.org"
-
-
-
-
-npm run test --prefix /home/nodeServer.git
-
