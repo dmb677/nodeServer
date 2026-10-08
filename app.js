@@ -1,4 +1,5 @@
 //Setup
+const pkg = require('./package.json');
 const fs = require('fs');
 
 const website = 'sites/' + process.argv[2];
@@ -12,15 +13,9 @@ require('dotenv').config({
 });
 
 const app = require('express')();
-
-const {
-    exec
-} = require('child_process');
-
-
+const exec = require('util').promisify(require('child_process').exec);
 const multer = require('multer');
 const path = require('path');
-
 const JSONdb = require('simple-json-db');
 const imageLog = new JSONdb(process.env.imagePath + '/imageLog.json');
 
@@ -66,7 +61,7 @@ const sessionVar = session({
     }
 });
 
-//routes  //, ,  //, , 
+//routes  
 const authRoutes = require('./routes/auth')(process.env.userDB);
 const logRoutes = require('./routes/log')({
     IPPath: process.env.LogIPDB,
@@ -76,7 +71,7 @@ const logRoutes = require('./routes/log')({
     servicename: process.env.servicename
 });
 const gameRoutes = require('./routes/game-routes')(process.env.gameDB);
-
+const fortuneRoutes = require('./routes/fortune')(process.env.fortunesDB);
 
 const port = process.env.port;
 const httpdocs = __dirname + '/' + website + '/httpdocs/';
@@ -101,12 +96,13 @@ app.use((req, res, next) => {
 
 app.use(sessionVar);
 app.use(logRoutes);
+app.use((require('express')).json());
 app.use((require('express')).static(httpdocs));
 app.use((require('express')).static(httpdocsAny));
 app.use((require('express')).static(process.env.imagePath));
 app.use('/auth', authRoutes);
 app.use('/game', gameRoutes);
-
+app.use('/f', fortuneRoutes);
 /** 
 app.get('/upload', async (request, response) => {
     response.sendFile(__dirname + '/upload.html');
@@ -122,7 +118,6 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 });
 
-app.use((require('express')).json());
 app.post('/upload-log', (req, res) => {
 
     imageLog.set(Date.now(), {
@@ -204,17 +199,18 @@ app.use((req, res) => {
     });
 });
 
-
-
 //Start up app
-exec('hostname -I', (err, stdout, stderr) => {
-    if (err) {
-        console.error(err);
-    } else {
+exec('hostname -I')
+    .then(d => {
         app.listen(port, () => {
             console.log(
-                `app listening at http://${stdout.trim()}:${port} \nnode verions ${process.version}`
+                `node requirements: ${pkg.engines.node}\nnode version: ${process.version}`);
+
+            console.log(
+                `app listening at http://${d.stdout.trim().split(' ')[0]}:${port}`
             );
         });
-    }
-});
+    })
+    .catch(error => {
+        console.log("Could not get hostname: " + error);
+    });

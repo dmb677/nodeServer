@@ -3,7 +3,7 @@ Description=Website-Node Service
 
 [Service]
 User=root
-WorkingDirectory=/home/server
+WorkingDirectory=/home/nodeServer.git
 ExecStart=node app.js varservername
 Restart=always
 RestartSec=3

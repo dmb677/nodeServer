@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Your Fortune</title>
+	<style>
+		* { box-sizing: border-box; }
+		body {
+			margin: 0;
+			min-height: 100vh;
+			display: grid;
+			place-items: center;
+			padding: 1rem;
+			font: 1rem/1.6 system-ui, sans-serif;
+			background: #151225;
+			color: #fff;
+		}
+		main {
+			position: relative;
+			width: min(90%, 42rem);
+			padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem);
+			background: #282044;
+			border-radius: 1rem;
+			box-shadow: 0 1rem 3rem #0006;
+			overflow: hidden;
+		}
+		h1 {
+			margin-top: 0;
+			margin-bottom: 1.5rem;
+			font-size: clamp(2rem, 6vw, 3rem);
+			color: #f7d774;
+		}
+		p {
+			margin: 1rem 0;
+			line-height: 1.6;
+		}
+		#fortune { line-height: 1.7; white-space: pre-wrap; }
+		.error { color: #ffaaa4; }
+		#deathMonth, #deathYear { font-size: 1.2em; font-weight: 700; color: #f77474; }
+		#futureWarning {
+			padding: 0.75rem 1rem;
+			border: 2px solid #f7d774;
+			border-radius: 0.75rem;
+			background: rgba(247, 215, 116, 0.08);
+			color: #f7d774;
+			font-weight: 700;
+			text-transform: uppercase;
+		}
+		.actions {
+			display: flex;
+			gap: 0.75rem;
+			justify-content: center;
+			flex-wrap: wrap;
+			margin-top: 2rem;
+		}
+		.actions a {
+			display: inline-block;
+			padding: 0.8rem 1.2rem;
+			border-radius: 999px;
+			background: #f7d774;
+			color: #1a132e;
+			font-weight: 700;
+			text-decoration: none;
+			text-align: center;
+			transition: transform 0.2s ease, opacity 0.2s ease;
+		}
+		.actions a:hover { transform: translateY(-1px); opacity: 0.9; }
+		#spinner {
+			position: absolute;
+			inset: 0;
+			display: none;
+			place-items: center;
+			background: rgba(40, 32, 68, 0.88);
+			backdrop-filter: blur(2px);
+			z-index: 2;
+		}
+		#spinner.visible {
+			display: grid;
+			animation: breath 4s ease-in-out infinite;
+		}
+		#spinner::before {
+			content: "";
+			display: block;
+			width: min(40vw);
+			height: min(40vw);
+			background: url('/dist/img/skull.png') center / contain no-repeat;
+			transform-origin: center;
+		}
+		@keyframes breath {
+			0%, 100% { transform: scale(0.80); opacity: 0.7; }
+			50% { transform: scale(1.0); opacity: 1; }
+		}
+		main > *:not(#spinner) {
+			opacity: 0;
+			visibility: hidden;
+			transition: opacity 0.6s ease, visibility 0.6s ease;
+		}
+		main:not(.loading) > *:not(#spinner) {
+			opacity: 1;
+			visibility: visible;
+		}
+		@media (max-width: 480px) {
+			body { padding: 0.75rem; }
+			main { width: min(100%, 32rem); padding: 1.5rem 1rem; }
+			.actions { flex-direction: column; }
+			.actions a { width: 100%; }
+			p { font-size: 0.98rem; }
+		}
+	</style>
+</head>
+<body>
+	<main>
+		<div id="spinner" aria-label="Loading your fate" role="status"></div>
+		<h1>Meet Your Fate</h1>
+
+		<p style="display:none;" id="futureWarning"><strong>YOUR FUTURE HAS ALREADY BEEN SEALED. IT CANNOT BE CHANGED, NO MATTER WHAT YOU TRY.</strong></p>
+
+		<p>Dear <strong><span id="name">Traveler</span></strong>:</p>
+
+		<p>The GODS have <span id='divine'>revealed your fate</span>, and <span id='intro'>I sadly inform you</span>.</p>
+
+		<p>You will meet your death in the most <span id='deathType'>tragic</span> way.</p>
+
+		<hr>
+
+		<p>In the month of <span id='deathMonth'>[Month]</span> in the year of our Lord <span id='deathYear'>[Year]</span>.</p>
+
+		<hr>
+		<p><span id='death'>Your fate is sealed.</span></p>
+
+		<div class="actions">
+			<a href="/">Return to Main Page</a>
+			<a href="/fortune">Return to Fortune</a>
+		</div>
+	</main>
+	<script>
+		
+		const main = document.querySelector('main');
+		const spinner = document.getElementById('spinner');
+		const name = document.getElementById('name');
+		const divine = document.getElementById('divine');
+		const intro = document.getElementById('intro');
+		const deathType = document.getElementById('deathType');
+		const deathMonth = document.getElementById('deathMonth');
+		const deathYear = document.getElementById('deathYear');
+		const death = document.getElementById('death');
+
+		main.classList.add('loading');
+		spinner.classList.add('visible');
+
+		fetch('/f/getFortune')
+			.then(response => {
+				if (!response.ok) throw new Error('Request failed');
+				return response.json();
+			})
+			.then(data => {
+				name.textContent = data.name;
+				divine.textContent = data.divine;
+				intro.textContent = data.intro;
+				deathType.textContent = data.deathType;
+				deathMonth.textContent = data.deathMonth;
+				deathYear.textContent = data.deathYear;
+				death.textContent = data.death;
+				if (data.visited > 0) {
+					futureWarning.style.display = 'block';
+				}
+				setTimeout(() => {
+					main.classList.remove('loading');
+					spinner.classList.remove('visible');
+				}, 3000);
+				
+			})
+			.catch(() => {
+				main.classList.remove('loading');
+				spinner.classList.remove('visible');
+			});
+	</script>
+</body>
+</html>
