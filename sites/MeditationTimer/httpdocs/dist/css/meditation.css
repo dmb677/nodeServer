@@ -731,6 +731,23 @@ h2 {
     stroke: var(--ring-progress-alt);
 }
 
+.ring-track.start-delay-ring {
+    stroke: rgba(111, 143, 207, 0.28);
+}
+
+.ring-progress.start-delay-ring {
+    stroke: #6485c6;
+    transition: none;
+}
+
+body[data-theme="high-contrast"] .ring-track.start-delay-ring {
+    stroke: #767676;
+}
+
+body[data-theme="high-contrast"] .ring-progress.start-delay-ring {
+    stroke: #003d8f;
+}
+
 .timer-readout {
     position: absolute;
     inset: 0;
@@ -966,6 +983,17 @@ select:focus,
     margin-top: 15px;
     padding-top: 13px;
     border-top: 1px solid var(--line);
+}
+
+.meditation-active-message {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.meditation-active-actions {
+    justify-content: flex-end;
 }
 
 .settings-action-group {
@@ -1292,6 +1320,10 @@ select {
         height: 42px;
     }
 
+    .settings-field select {
+        font-size: 16px;
+    }
+
     .duration-control {
         gap: 5px;
         padding: 0 9px;
@@ -1475,6 +1507,7 @@ body.zen-mode {
 .zen-mode .topbar,
 .zen-mode .section-heading,
 .zen-mode .meditation-history,
+.zen-mode .summary-link,
 .zen-mode .session-message,
 .zen-mode .timer-actions,
 .zen-mode .site-footer {

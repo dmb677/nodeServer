@@ -5,7 +5,10 @@
     const logoutButton = document.getElementById("logout-button");
     const settingsButton = document.getElementById("settings-button");
     const settingsDialog = document.getElementById("settings-dialog");
+    const meditationActiveDialog = document.getElementById("meditation-active-dialog");
     const closeSettingsButton = document.getElementById("close-settings-button");
+    const closeMeditationActiveDialog = document.getElementById("close-meditation-active-dialog");
+    const dismissMeditationActiveDialog = document.getElementById("dismiss-meditation-active-dialog");
     const saveSettingsButton = document.getElementById("save-settings-button");
     const cancelSettingsButton = document.getElementById("cancel-settings-button");
     const restoreDefaultsButton = document.getElementById("restore-defaults-button");
@@ -28,14 +31,18 @@
     const progressRing = document.getElementById("progress-ring");
     const intervalTrack = document.getElementById("interval-track");
     const intervalProgressRing = document.getElementById("interval-progress-ring");
+    const startDelayTrack = document.getElementById("start-delay-track");
+    const startDelayProgressRing = document.getElementById("start-delay-progress-ring");
     const startButton = document.getElementById("start-button");
     const pauseButton = document.getElementById("pause-button");
     const resetButton = document.getElementById("reset-button");
     const zenModeButton = document.getElementById("zen-mode-button");
     const sessionRingRadius = 108;
     const intervalRingRadius = 100;
+    const startDelayRingRadius = 92;
     const sessionRingCircumference = 2 * Math.PI * sessionRingRadius;
     const intervalRingCircumference = 2 * Math.PI * intervalRingRadius;
+    const startDelayRingCircumference = 2 * Math.PI * startDelayRingRadius;
     let installPrompt;
 
     if ("serviceWorker" in navigator) {
@@ -76,11 +83,14 @@
 
     progressRing.style.strokeDasharray = `${sessionRingCircumference}`;
     intervalProgressRing.style.strokeDasharray = `${intervalRingCircumference}`;
+    startDelayProgressRing.style.strokeDasharray = `${startDelayRingCircumference}`;
 
     let audioContext;
     let timerId;
     let startDelayTimerId;
     let startDelayDeadline = 0;
+    let startDelayDurationSeconds = 0;
+    let displayedStartDelaySeconds;
     let deadline = 0;
     let durationSeconds = 600;
     let remainingSeconds = durationSeconds;
@@ -89,7 +99,7 @@
     let isRunning = false;
     const defaultPreferences = {
         durationMinutes: 10,
-        startDelaySeconds: 0,
+        startDelaySeconds: 5,
         intervalMinutes: 5,
         startSound: "bell",
         intervalSound: "bell",
@@ -156,13 +166,14 @@
         }
 
         const history = await response.json();
-        historyList.replaceChildren();
         if (history.length === 0) {
+            historyList.replaceChildren();
             historyStatus.textContent = "Completed sessions will appear here.";
             return;
         }
 
         historyStatus.textContent = `${history.length} completed meditation${history.length === 1 ? "" : "s"}.`;
+        const historyItems = document.createDocumentFragment();
         history.forEach(meditation => {
             const item = document.createElement("li");
             const completedAt = new Date(meditation.completedAt);
@@ -170,8 +181,9 @@
                 ? "Date unavailable"
                 : completedAt.toLocaleString();
             item.textContent = `${dateText} · ${meditation.durationMinutes} minute${meditation.durationMinutes === 1 ? "" : "s"}`;
-            historyList.append(item);
+            historyItems.append(item);
         });
+        historyList.replaceChildren(historyItems);
     }
 
     async function loadPreferences() {
@@ -224,6 +236,7 @@
             remainingSeconds = durationSeconds;
             nextBellSeconds = preferences.intervalMinutes * 60;
             renderTime(remainingSeconds);
+            renderStartDelay(0);
         }
     }
 
@@ -285,6 +298,14 @@
         return `${minutes}:${String(remainder).padStart(2, "0")}`;
     }
 
+    function setRingVisible(ring, visible) {
+        if (visible && ring.hasAttribute("hidden")) {
+            ring.removeAttribute("hidden");
+        } else if (!visible && !ring.hasAttribute("hidden")) {
+            ring.setAttribute("hidden", "");
+        }
+    }
+
     function renderTime(seconds, elapsedSeconds = durationSeconds - seconds) {
         const safeSeconds = Math.max(0, seconds);
         timeDisplay.textContent = formatTime(safeSeconds);
@@ -295,8 +316,8 @@
 
         const intervalSeconds = Number(intervalInput.value) * 60;
         const hasIntervalBells = intervalSeconds > 0 && intervalSeconds < durationSeconds;
-        intervalTrack.hidden = !hasIntervalBells;
-        intervalProgressRing.hidden = !hasIntervalBells;
+        setRingVisible(intervalTrack, hasIntervalBells);
+        setRingVisible(intervalProgressRing, hasIntervalBells);
         if (hasIntervalBells) {
             const elapsedInInterval = Math.max(0, elapsedSeconds) % intervalSeconds;
             const secondsUntilBell = intervalSeconds - elapsedInInterval;
@@ -308,6 +329,27 @@
                 intervalRingCircumference * (1 - intervalFractionRemaining)
             );
         }
+    }
+
+    function renderStartDelay(secondsLeft) {
+        const hasActiveStartDelay = startDelayDurationSeconds > 0 && secondsLeft > 0;
+        const hasStartDelayPreview = !isRunning &&
+            startDelayDeadline === 0 &&
+            elapsedBeforePause === 0 &&
+            Number(startDelayInput.value) > 0;
+        const showStartDelayRing = hasActiveStartDelay || hasStartDelayPreview;
+        setRingVisible(startDelayTrack, showStartDelayRing);
+        setRingVisible(startDelayProgressRing, showStartDelayRing);
+        if (!showStartDelayRing) {
+            return;
+        }
+
+        const fractionRemaining = hasActiveStartDelay
+            ? Math.max(0, Math.min(1, secondsLeft / startDelayDurationSeconds))
+            : 1;
+        startDelayProgressRing.style.strokeDashoffset = String(
+            startDelayRingCircumference * (1 - fractionRemaining)
+        );
     }
 
     function playSound(sound) {
@@ -405,11 +447,14 @@
     }
 
     function stopStartDelay() {
-        if (startDelayTimerId) {
-            window.clearInterval(startDelayTimerId);
+        if (startDelayTimerId !== undefined) {
+            window.cancelAnimationFrame(startDelayTimerId);
             startDelayTimerId = undefined;
         }
         startDelayDeadline = 0;
+        startDelayDurationSeconds = 0;
+        displayedStartDelaySeconds = undefined;
+        renderStartDelay(0);
     }
 
     function stopInterval() {
@@ -491,11 +536,19 @@
     }
 
     function tickStartDelay() {
-        const secondsLeft = Math.max(0, Math.ceil((startDelayDeadline - Date.now()) / 1000));
-        sessionMessage.textContent = `Your meditation begins in ${secondsLeft} second${secondsLeft === 1 ? "" : "s"}.`;
+        const secondsLeftExact = Math.max(0, (startDelayDeadline - Date.now()) / 1000);
+        const secondsLeft = Math.ceil(secondsLeftExact);
+        renderStartDelay(secondsLeftExact);
+        if (secondsLeft !== displayedStartDelaySeconds) {
+            sessionMessage.textContent = `Your meditation begins in ${secondsLeft} second${secondsLeft === 1 ? "" : "s"}.`;
+            displayedStartDelaySeconds = secondsLeft;
+        }
         if (secondsLeft === 0) {
             startMeditationTimer();
+            return;
         }
+
+        startDelayTimerId = window.requestAnimationFrame(tickStartDelay);
     }
 
     async function beginSession() {
@@ -527,6 +580,8 @@
             return;
         }
 
+        setZenMode(true);
+
         if (remainingSeconds === durationSeconds && elapsedBeforePause === 0) {
             durationSeconds = minutes * 60;
             remainingSeconds = durationSeconds;
@@ -546,9 +601,9 @@
         resetButton.hidden = false;
         resetButton.textContent = "Cancel";
         timerCaption.textContent = "SETTLING IN";
+        startDelayDurationSeconds = startDelaySeconds;
         startDelayDeadline = Date.now() + startDelaySeconds * 1000;
         tickStartDelay();
-        startDelayTimerId = window.setInterval(tickStartDelay, 200);
     }
 
     function pauseSession() {
@@ -602,6 +657,7 @@
         if (Number.isInteger(seconds) && seconds >= 0 && seconds <= 60) {
             startDelayInput.removeAttribute("aria-invalid");
         }
+        renderStartDelay(0);
     });
 
     themeInput.addEventListener("change", () => {
@@ -631,6 +687,11 @@
     });
 
     settingsButton.addEventListener("click", () => {
+        if (isRunning || startDelayDeadline > 0 || elapsedBeforePause > 0) {
+            meditationActiveDialog.showModal();
+            return;
+        }
+
         setFormPreferences(savedPreferences);
         settingsStatus.textContent = "";
         settingsDialog.showModal();
@@ -638,6 +699,8 @@
     saveSettingsButton.addEventListener("click", savePreferences);
     cancelSettingsButton.addEventListener("click", () => settingsDialog.close());
     closeSettingsButton.addEventListener("click", () => settingsDialog.close());
+    closeMeditationActiveDialog.addEventListener("click", () => meditationActiveDialog.close());
+    dismissMeditationActiveDialog.addEventListener("click", () => meditationActiveDialog.close());
     restoreDefaultsButton.addEventListener("click", () => {
         setFormPreferences(defaultPreferences);
         settingsStatus.textContent = "Default settings selected. Save to keep these changes.";
@@ -650,6 +713,11 @@
     settingsDialog.addEventListener("click", event => {
         if (event.target === settingsDialog) {
             settingsDialog.close();
+        }
+    });
+    meditationActiveDialog.addEventListener("click", event => {
+        if (event.target === meditationActiveDialog) {
+            meditationActiveDialog.close();
         }
     });
 

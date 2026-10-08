@@ -13,8 +13,9 @@
                 <button id="install-button" class="text-button" type="button" hidden>Install app</button>
                 <button id="settings-button" class="icon-button" type="button" aria-label="Open session settings" aria-haspopup="dialog" hidden>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="m14.7 3.9.45 1.54c.43.15.84.39 1.2.69l1.53-.46 1.24 2.15-1.1 1.16c.08.45.08.92 0 1.37l1.1 1.16-1.24 2.15-1.53-.46c-.36.3-.77.54-1.2.69l-.45 1.54h-2.48l-.45-1.54a4.8 4.8 0 0 1-1.2-.69l-1.53.46L7.8 11.5l1.1-1.16a4.1 4.1 0 0 1 0-1.37L7.8 7.81l1.24-2.15 1.53.46c.36-.3.77-.54 1.2-.69l.45-1.54h2.48Z"/>
-                        <circle cx="13.46" cy="9.65" r="2.05"/>
+                        <circle cx="5" cy="12" r="1.5"/>
+                        <circle cx="12" cy="12" r="1.5"/>
+                        <circle cx="19" cy="12" r="1.5"/>
                     </svg>
                 </button>
                 <a id="account-link" class="account-link" href="/auth/login">Log in</a>
@@ -54,9 +55,11 @@
                         <svg class="timer-ring" viewBox="0 0 240 240" role="img" aria-labelledby="timer-description">
                             <title id="timer-description">Meditation session countdown</title>
                             <circle class="ring-track" cx="120" cy="120" r="108"></circle>
-                            <circle id="interval-track" class="ring-track interval-ring" cx="120" cy="120" r="100"></circle>
+                            <circle id="interval-track" class="ring-track interval-ring" cx="120" cy="120" r="100" hidden></circle>
+                            <circle id="start-delay-track" class="ring-track start-delay-ring" cx="120" cy="120" r="92" hidden></circle>
                             <circle id="progress-ring" class="ring-progress" cx="120" cy="120" r="108"></circle>
-                            <circle id="interval-progress-ring" class="ring-progress interval-ring" cx="120" cy="120" r="100"></circle>
+                            <circle id="interval-progress-ring" class="ring-progress interval-ring" cx="120" cy="120" r="100" hidden></circle>
+                            <circle id="start-delay-progress-ring" class="ring-progress start-delay-ring" cx="120" cy="120" r="92" hidden></circle>
                         </svg>
                         <div class="timer-readout">
                             <span id="time-display" class="time-display" aria-live="off">10:00</span>
@@ -205,9 +208,29 @@
             </section>
         </dialog>
 
+        <dialog id="meditation-active-dialog" class="settings-dialog meditation-active-dialog" aria-labelledby="meditation-active-title">
+            <section class="settings-card">
+                <div class="settings-heading">
+                    <div>
+                        <p class="eyebrow">Session in progress</p>
+                        <h2 id="meditation-active-title">Finish your meditation first</h2>
+                    </div>
+                    <button id="close-meditation-active-dialog" class="icon-button settings-close" type="button" aria-label="Close message">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m6 6 12 12M18 6 6 18"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="meditation-active-message">End the current meditation before changing its settings.</p>
+                <div class="settings-actions meditation-active-actions">
+                    <button id="dismiss-meditation-active-dialog" class="button button-primary" type="button">Okay</button>
+                </div>
+            </section>
+        </dialog>
+
         <p id="app-error" class="app-error" role="alert" hidden></p>
         <%- include('partials/footer.ejs') %>
     </main>
-    <script src="/dist/js/meditation.js" defer></script>
+    <script src="/dist/js/meditation.js?v=20" defer></script>
 </body>
 </html>

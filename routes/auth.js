@@ -38,7 +38,7 @@ module.exports = function (userDBpath) {
     const defaultPreferences = {
         durationMinutes: 10,
         intervalMinutes: 5,
-        startDelaySeconds: 0,
+        startDelaySeconds: 5,
         startSound: 'bell',
         intervalSound: 'bell',
         finishSound: 'bell',

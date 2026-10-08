@@ -65,10 +65,15 @@
         totalSessions.textContent = `${history.length} completed session${history.length === 1 ? "" : "s"}`;
         practiceDays.textContent = String(dailyTotals.size);
         currentStreak.textContent = String(getCurrentStreak([...dailyTotals.keys()]));
-        dailySummaryBody.replaceChildren();
 
         const sortedDays = [...dailyTotals.entries()].sort(([first], [second]) => second.localeCompare(first));
         let runningTotal = cumulativeMinutes;
+        const dateFormatter = new Intl.DateTimeFormat(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+        });
+        const rows = document.createDocumentFragment();
         sortedDays.forEach(([dateKey, daily]) => {
             const row = document.createElement("tr");
             const dateCell = document.createElement("td");
@@ -80,19 +85,16 @@
                 dateCell.textContent = "Date unavailable";
             } else {
                 const [year, month, day] = dateKey.split("-").map(Number);
-                dateCell.textContent = new Date(year, month - 1, day).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric"
-                });
+                dateCell.textContent = dateFormatter.format(new Date(year, month - 1, day));
             }
             sessionsCell.textContent = String(daily.sessions);
             minutesCell.textContent = formatDuration(daily.minutes);
             cumulativeCell.textContent = formatDuration(runningTotal);
             runningTotal -= daily.minutes;
             row.append(dateCell, sessionsCell, minutesCell, cumulativeCell);
-            dailySummaryBody.append(row);
+            rows.append(row);
         });
+        dailySummaryBody.replaceChildren(rows);
 
         summaryStatus.textContent = sortedDays.length
             ? "Daily totals are grouped by your local calendar date."

@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "still-shell-";
-const CACHE_NAME = `${CACHE_PREFIX}v7`;
+const CACHE_NAME = `${CACHE_PREFIX}v20`;
 const APP_SHELL = [
     "/",
     "/manifest.webmanifest",
@@ -8,11 +8,12 @@ const APP_SHELL = [
     "/icons/still-192.png",
     "/icons/still-512.png"
 ];
+const VERSIONED_APP_SHELL = APP_SHELL.map(path => `${path}?cache=${CACHE_NAME}`);
 
 self.addEventListener("install", event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(APP_SHELL))
+            .then(cache => cache.addAll(VERSIONED_APP_SHELL))
             .then(() => self.skipWaiting())
     );
 });
@@ -70,7 +71,7 @@ self.addEventListener("fetch", event => {
 
     if (APP_SHELL.includes(url.pathname)) {
         event.respondWith(
-            caches.match(request).then(cachedResponse => {
+            caches.match(request, { ignoreSearch: true }).then(cachedResponse => {
                 if (cachedResponse) {
                     return cachedResponse;
                 }
