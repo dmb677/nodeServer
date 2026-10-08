@@ -89,9 +89,83 @@ module.exports = function (params) {
         }
     }
 
+    const maxCachedIPDetails = 1000;
+    const maxCachedIPDetailsBytes = 4 * 1024 * 1024;
+    const maxConcurrentIPDetailReads = 16;
+    const cachedIPDetails = new Map();
+    const pendingIPDetailReads = new Map();
+    const queuedIPDetailReadSlots = [];
+    let activeIPDetailReads = 0;
+    let cachedIPDetailsBytes = 0;
+
+    async function acquireIPDetailReadSlot() {
+        if (activeIPDetailReads < maxConcurrentIPDetailReads) {
+            activeIPDetailReads++;
+            return;
+        }
+
+        await new Promise(resolve => queuedIPDetailReadSlots.push(resolve));
+    }
+
+    function releaseIPDetailReadSlot() {
+        const next = queuedIPDetailReadSlots.shift();
+        if (next) {
+            next();
+        } else {
+            activeIPDetailReads--;
+        }
+    }
+
+    async function readIPDetails(ip) {
+        const cached = cachedIPDetails.get(ip);
+        if (cached) {
+            cachedIPDetails.delete(ip);
+            cachedIPDetails.set(ip, cached);
+            return cached.value;
+        }
+
+        const pending = pendingIPDetailReads.get(ip);
+        if (pending) {
+            return pending;
+        }
+
+        const read = (async () => {
+            await acquireIPDetailReadSlot();
+            try {
+                const contents = await fsp.readFile(logIPFiles + "/" + ip, 'utf8');
+                const value = JSON.parse(contents);
+                const size = Buffer.byteLength(contents, 'utf8');
+
+                if (size <= maxCachedIPDetailsBytes) {
+                    while (cachedIPDetails.size >= maxCachedIPDetails ||
+                        cachedIPDetailsBytes + size > maxCachedIPDetailsBytes) {
+                        const oldestIP = cachedIPDetails.keys().next().value;
+                        const oldest = cachedIPDetails.get(oldestIP);
+                        cachedIPDetails.delete(oldestIP);
+                        cachedIPDetailsBytes -= oldest.size;
+                    }
+
+                    cachedIPDetails.set(ip, { value, size });
+                    cachedIPDetailsBytes += size;
+                }
+
+                return value;
+            } finally {
+                releaseIPDetailReadSlot();
+            }
+        })();
+        pendingIPDetailReads.set(ip, read);
+
+        try {
+            return await read;
+        } finally {
+            pendingIPDetailReads.delete(ip);
+        }
+    }
+
     function readIPFiles(d) {
         let ipAddresses = {};
-        for (i = 0; i < d.length; i++) {
+        for (let i = 0; i < d.length; i++) {
             var item = d[i];
             if (!ipAddresses[item.IP]) {
                 ipAddresses[item.IP] = {
@@ -131,8 +205,7 @@ module.exports = function (params) {
             }
         }
         const promiseArray = [];
-        for (i = 0; i < Object.keys(ipAddresses).length; i++) {
-            let itemIP = Object.keys(ipAddresses)[i];
+        for (const itemIP of Object.keys(ipAddresses)) {
 
             /*
             try {
@@ -143,13 +216,14 @@ module.exports = function (params) {
                 ipAddresses[itemIP].ipData = "Error in IP Address";
             }
                 */
-            let tmp = fsp.readFile(logIPFiles + "/" + itemIP, 'utf8')
-                .then((d) => {
-                    d = JSON.parse(d);
-                    ipAddresses[itemIP].ipData = d;
+            let tmp = readIPDetails(itemIP)
+                .then((ipData) => {
+                    ipAddresses[itemIP].ipData = ipData;
 
-                })
-                .catch(error => {
+                }).catch(error => {
+                    if (error.code !== 'ENOENT') {
+                        console.error(`Unable to read IP details for ${itemIP}:`, error);
+                    }
                     ipAddresses[itemIP].ipData = "Error in IP Address";
                 });
 
@@ -164,6 +238,212 @@ module.exports = function (params) {
                 return "error reading IP Addresses";
             });
 
+    }
+
+    const diagnosticPageSize = 500;
+    const diagnosticBinLimit = 600;
+    const diagnosticUrlLimit = 500;
+    const defaultDiagnosticStepMs = 10 * 60_000;
+
+    async function getDiagnosticLogFileInfo() {
+        try {
+            const stats = await fsp.stat(logFile);
+            return {
+                size: stats.size,
+                id: `${stats.dev}:${stats.ino}`
+            };
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                return {
+                    size: 0,
+                    id: `missing:${logFile}`
+                };
+            }
+            throw error;
+        }
+    }
+
+    function getRequestedStepMs(value) {
+        const stepSeconds = value === undefined
+            ? defaultDiagnosticStepMs / 1000
+            : Number(value);
+        if (!Number.isFinite(stepSeconds) || stepSeconds < 1 || stepSeconds > 31_536_000) {
+            const error = new Error('Histogram step must be between 1 second and 1 year');
+            error.status = 400;
+            throw error;
+        }
+        return stepSeconds * 1000;
+    }
+
+    async function findRecentLogEntryStarts(endOffset, maxEntries) {
+        // The log writer serializes each entry with "rq" as its first property.
+        const entryMarker = Buffer.from('{\n  "rq":');
+        const chunkSize = 64 * 1024;
+        const entryStarts = [];
+        let position = endOffset;
+        let rightContext = Buffer.alloc(0);
+        const file = await fsp.open(logFile, 'r');
+
+        try {
+            while (position > 0 && entryStarts.length < maxEntries) {
+                const start = Math.max(0, position - chunkSize);
+                const chunk = Buffer.alloc(position - start);
+                const { bytesRead } = await file.read(chunk, 0, chunk.length, start);
+                const currentChunk = chunk.subarray(0, bytesRead);
+                const combined = rightContext.length
+                    ? Buffer.concat([currentChunk, rightContext])
+                    : currentChunk;
+
+                let markerIndex = combined.lastIndexOf(entryMarker);
+                while (markerIndex >= 0) {
+                    if (markerIndex < bytesRead) {
+                        entryStarts.push(start + markerIndex);
+                        if (entryStarts.length >= maxEntries) {
+                            break;
+                        }
+                    }
+                    if (markerIndex === 0) {
+                        break;
+                    }
+                    markerIndex = combined.lastIndexOf(entryMarker, markerIndex - 1);
+                }
+
+                rightContext = combined.subarray(0, Math.min(entryMarker.length - 1, combined.length));
+                position = start;
+                if (bytesRead !== chunk.length) {
+                    break;
+                }
+            }
+        } finally {
+            await file.close();
+        }
+
+        return entryStarts;
+    }
+
+    async function getDiagnosticLogPage(requestedCursor, requestedStepMs) {
+        const fileInfo = await getDiagnosticLogFileInfo();
+        const fileSize = fileInfo.size;
+        const cursor = requestedCursor === null ? fileSize : requestedCursor;
+
+        if (!Number.isSafeInteger(cursor) || cursor < 0 || cursor > fileSize) {
+            const error = new Error('Invalid log pagination cursor');
+            error.status = 400;
+            throw error;
+        }
+
+        const entryStarts = await findRecentLogEntryStarts(
+            cursor,
+            diagnosticPageSize + 1
+        );
+        const hasMore = entryStarts.length > diagnosticPageSize;
+        const pageStarts = entryStarts.slice(0, diagnosticPageSize);
+        const pageEntries = [];
+
+        if (pageStarts.length > 0) {
+            const dataStart = pageStarts[pageStarts.length - 1];
+            const data = await fsp.open(logFile, 'r');
+            try {
+                const pageBuffer = Buffer.alloc(cursor - dataStart);
+                const { bytesRead } = await data.read(pageBuffer, 0, pageBuffer.length, dataStart);
+                if (bytesRead !== pageBuffer.length) {
+                    throw new Error('Diagnostic log changed while reading a page');
+                }
+
+                for (let index = 0; index < pageStarts.length; index++) {
+                    const start = pageStarts[index] - dataStart;
+                    const end = index === 0 ? cursor - dataStart : pageStarts[index - 1] - dataStart;
+                    let json = pageBuffer.subarray(start, end).toString('utf8').trim();
+                    if (json.endsWith(',')) {
+                        json = json.slice(0, -1).trimEnd();
+                    }
+                    pageEntries.push({
+                        entry: JSON.parse(json),
+                        startOffset: pageStarts[index]
+                    });
+                }
+            } finally {
+                await data.close();
+            }
+        }
+
+        const entries = pageEntries.map(item => item.entry);
+        let minDate = Infinity;
+        let maxDate = -Infinity;
+        for (const entry of entries) {
+            if (Number.isFinite(entry.date)) {
+                minDate = Math.min(minDate, entry.date);
+                maxDate = Math.max(maxDate, entry.date);
+            }
+        }
+
+        const hasDates = Number.isFinite(minDate) && Number.isFinite(maxDate);
+        const requestedBinCount = hasDates
+            ? Math.ceil((maxDate - minDate + 1) / requestedStepMs)
+            : 0;
+        const binWidth = requestedBinCount > diagnosticBinLimit
+            ? Math.ceil((maxDate - minDate + 1) / diagnosticBinLimit / requestedStepMs) * requestedStepMs
+            : requestedStepMs;
+        const binCount = hasDates ? Math.max(1, Math.ceil((maxDate - minDate + 1) / binWidth)) : 0;
+        const histogram = Array.from({ length: binCount }, (_, index) => ({
+            binStart: minDate + index * binWidth,
+            count: 0
+        }));
+        const urlStats = {};
+        let urlStatCount = 0;
+        let urlStatsTruncated = false;
+        const failedUrls = [];
+
+        for (const entry of entries) {
+            if (Number.isFinite(entry.date) && histogram.length > 0) {
+                const index = Math.min(
+                    histogram.length - 1,
+                    Math.floor((entry.date - minDate) / binWidth)
+                );
+                if (index >= 0) {
+                    histogram[index].count++;
+                }
+            }
+
+            if (entry.err === 'None' && typeof entry.URL === 'string') {
+                const url = entry.URL.split('?')[0];
+                if (!Object.hasOwn(urlStats, url) && urlStatCount < diagnosticUrlLimit) {
+                    urlStats[url] = { count: 0, took: 0 };
+                    urlStatCount++;
+                }
+
+                if (Object.hasOwn(urlStats, url)) {
+                    // Aggregate at most diagnosticUrlLimit distinct paths.
+                    urlStats[url].count++;
+                    const duration = Number.parseFloat(entry.took);
+                    if (Number.isFinite(duration)) {
+                        urlStats[url].took += duration;
+                    }
+                } else {
+                    urlStatsTruncated = true;
+                }
+            }
+
+            if (entry.err === 'URL Not Found\n') {
+                failedUrls.push(`${entry.URL} by ${entry.IP}`);
+            }
+        }
+
+        return {
+            log: entries,
+            logBytes: fileSize,
+            logId: fileInfo.id,
+            pageCursor: cursor,
+            hasMore,
+            nextCursor: pageEntries.length ? pageEntries[pageEntries.length - 1].startOffset : null,
+            failedUrls,
+            failedUrlCount: failedUrls.length,
+            histogram,
+            histogramStepMs: binWidth,
+            urlStats,
+            urlStatsTruncated,
+            IPs: await readIPFiles(entries)
+        };
     }
 
 
@@ -200,60 +480,116 @@ module.exports = function (params) {
 
     router.get('/get-diag-data', (req, res) => {
         if (req.session.user && req.session.admin) {
-            //var ret = "{";
-            ret = {};
+            let requestedStepMs;
+            try {
+                requestedStepMs = getRequestedStepMs(req.query.stepSeconds);
+            } catch (error) {
+                return res.status(400).json({
+                    msg: error.message
+                });
+            }
+            const ret = {};
+            const memoryBefore = process.memoryUsage();
+            const memoryPeak = {
+                rss: memoryBefore.rss,
+                heapUsed: memoryBefore.heapUsed
+            };
+            const memorySampler = setInterval(() => {
+                const current = process.memoryUsage();
+                memoryPeak.rss = Math.max(memoryPeak.rss, current.rss);
+                memoryPeak.heapUsed = Math.max(memoryPeak.heapUsed, current.heapUsed);
+            }, 10);
 
-            var cc =
+            function finishMemorySampling() {
+                clearInterval(memorySampler);
+                const memoryAfter = process.memoryUsage();
+                memoryPeak.rss = Math.max(memoryPeak.rss, memoryAfter.rss);
+                memoryPeak.heapUsed = Math.max(memoryPeak.heapUsed, memoryAfter.heapUsed);
+                return {
+                    samplingIntervalMs: 10,
+                    before: {
+                        rssBytes: memoryBefore.rss,
+                        heapUsedBytes: memoryBefore.heapUsed
+                    },
+                    peak: {
+                        rssBytes: memoryPeak.rss,
+                        heapUsedBytes: memoryPeak.heapUsed
+                    },
+                    after: {
+                        rssBytes: memoryAfter.rss,
+                        heapUsedBytes: memoryAfter.heapUsed
+                    }
+                };
+            }
+
+            const command =
                 `systemctl show ${params.servicename}.service --property=ActiveState,ActiveEnterTimestamp`;
-            //var cc = `ls -l`;
 
-            const getCommand = exec(cc)
+            const getCommand = exec(command)
                 .then((d) => {
                     if (d.stdout) {
-                        //ret += `"command": "${d.stdout.replace(/(\r\n|\n|\r)/gm, "")}",`;
                         ret.command = d.stdout.replace(/(\r\n|\n|\r)/gm, "");
                     }
                 })
                 .catch(error => {
                     console.log(error);
-                    //ret += `"command": "${error.stderr.replace(/(\r\n|\n|\r)/gm, "")}",`;
-                    ret.command = error.stderr.replace(/(\r\n|\n|\r)/gm, "");
+                    ret.command = (error.stderr || error.message).replace(/(\r\n|\n|\r)/gm, "");
                 });
 
-            const getLog = fsp.readFile(logFile, 'utf8')
-                .then(d => {
-                    d = '[' + d.slice(0, -1) + ']';
-                    //ret += `"log":${d},`;
-                    ret.log = JSON.parse(d);
-                    return readIPFiles(ret.log);
-                })
-                .then(d => {
-                    //ret += `"IPs": ${JSON.stringify(d)},`;
-                    ret.IPs = d;
-                })
-                .catch(error => {
-                    console.log(error);
-                    //ret += `"log": "Error Reading log",`;
+            const getLog = getDiagnosticLogPage(null, requestedStepMs)
+                .then(summary => {
+                    Object.assign(ret, summary);
                 });
 
-            // get rid of params
             const getUsers = fsp.readFile(userDBpath, 'utf8').then((d) => {
-                    //ret += `"Users": ${d},`;
-                    ret.Users = JSON.parse(d);
-                })
-                .catch(error => {
-                    console.log(error);
-                    //ret += `"Users": "Error Reading User Data",`;
-                });
+                ret.Users = JSON.parse(d);
+            });
 
 
-            Promise.all([getLog, getUsers, getCommand]).then((results) => {
+            Promise.all([getLog, getUsers, getCommand]).then(() => {
                 ret.Node = process.version;
+                ret.memory = finishMemorySampling();
                 res.send(ret);
+            }).catch(error => {
+                finishMemorySampling();
+                console.error('Unable to read diagnostic data:', error);
+                res.status(500).json({ msg: 'Unable to read diagnostic data' });
             });
 
         } else {
-            res.send('{"msg": "You need to be logged in as admin"}');
+            res.status(403).json({ msg: 'You need to be logged in as admin' });
+        }
+    });
+
+    router.get('/get-diag-log', async (req, res) => {
+        if (!req.session.user || !req.session.admin) {
+            return res.status(403).json({ msg: 'You need to be logged in as admin' });
+        }
+
+        try {
+            const cursor = Number(req.query.cursor);
+            const requestedStepMs = getRequestedStepMs(req.query.stepSeconds);
+            const page = await getDiagnosticLogPage(cursor, requestedStepMs);
+            res.json(page);
+        } catch (error) {
+            if (error.status === 400) {
+                return res.status(400).json({ msg: error.message });
+            }
+            console.error('Unable to read diagnostic log page:', error);
+            res.status(500).json({ msg: 'Unable to read diagnostic log page' });
+        }
+    });
+
+    router.get('/get-diag-meta', async (req, res) => {
+        if (!req.session.user || !req.session.admin) {
+            return res.status(403).json({ msg: 'You need to be logged in as admin' });
+        }
+        try {
+            const fileInfo = await getDiagnosticLogFileInfo();
+            res.json({ logId: fileInfo.id, logBytes: fileInfo.size });
+        } catch (error) {
+            console.error('Unable to read diagnostic log metadata:', error);
+            res.status(500).json({ msg: 'Unable to read diagnostic log metadata' });
         }
     });
 

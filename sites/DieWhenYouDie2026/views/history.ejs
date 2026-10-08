@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Past Fortunes</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 1.5rem;
+            background: #070707;
+            color: #f7edff;
+            font: 1rem/1.6 Georgia, serif;
+        }
+
+        main {
+            width: min(100%, 760px);
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin: 0;
+            color: #b5b5b6;
+            font-size: clamp(2rem, 7vw, 3rem);
+            text-align: center;
+        }
+
+        .intro,
+        #status {
+            color: #cbbbd8;
+            text-align: center;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1.5rem 0;
+        }
+
+        a {
+            color: #f0b6ff;
+        }
+
+        .actions a,
+        .fortune-card a {
+            display: inline-block;
+            padding: 0.65rem 1rem;
+            border-radius: 999px;
+            background: #c87cf0;
+            color: #180b25;
+            font: 600 0.95rem system-ui, sans-serif;
+            text-decoration: none;
+        }
+
+        .fortune-card {
+            margin: 1rem 0;
+            padding: 1.25rem;
+            border: 1px solid #f16060;
+            border-radius: 14px;
+            background: #351217;
+            box-shadow: 0 12px 36px #0008;
+        }
+
+        .fortune-card h2 {
+            margin: 0 0 0.35rem;
+            font-size: 1.4rem;
+        }
+
+        .meta {
+            margin: 0.3rem 0;
+            color: #d4c4ce;
+            font: 0.9rem/1.5 system-ui, sans-serif;
+        }
+
+        .fortune-card a {
+            margin-top: 0.8rem;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem;
+            }
+
+            .fortune-card {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>✦ The Archive of Fates ✦</h1>
+        <p class="intro">Every fate the oracle has recorded, sealed in the pages of history.</p>
+        <nav class="actions" aria-label="Fortune navigation">
+            <a href="/fortune">Get your Fortune Read</a>
+            <a href="/">Return Home</a>
+        </nav>
+        <p id="status" role="status">Searching the records...</p>
+        <section id="history" aria-label="Previously told fortunes"></section>
+    </main>
+
+    <script>
+        const status = document.getElementById('status');
+        const historyList = document.getElementById('history');
+
+        function formatDate(value) {
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? 'Date unknown' : date.toLocaleString();
+        }
+
+        fetch('/f/history')
+            .then(response => {
+                if (!response.ok) throw new Error('Could not load the fortune archive.');
+                return response.json();
+            })
+            .then(fortunes => {
+                status.textContent = fortunes.length
+                    ? `${fortunes.length} fortune${fortunes.length === 1 ? '' : 's'} recorded`
+                    : 'No fortunes have been told yet.';
+
+                fortunes.forEach(fortune => {
+                    const card = document.createElement('article');
+                    card.className = 'fortune-card';
+
+                    const name = document.createElement('h2');
+                    name.textContent = fortune.name || 'Unknown traveler';
+                    card.appendChild(name);
+
+                    const birthdate = document.createElement('p');
+                    birthdate.className = 'meta';
+                    birthdate.textContent = `Born ${fortune.month || 'unknown month'} ${fortune.day || ''}`.trim();
+                    card.appendChild(birthdate);
+
+                    const told = document.createElement('p');
+                    told.className = 'meta';
+                    told.textContent = `First recorded: ${formatDate(fortune.dateCreated)}`;
+                    card.appendChild(told);
+
+                    const visits = document.createElement('p');
+                    visits.className = 'meta';
+                    visits.textContent = `${fortune.visited || 0} previous visit${fortune.visited === 1 ? '' : 's'}`;
+                    card.appendChild(visits);
+
+                    const link = document.createElement('a');
+                    link.href = `/f/read/${encodeURIComponent(fortune.fortuneID)}`;
+                    link.textContent = 'Read this fortune';
+                    card.appendChild(link);
+
+                    historyList.appendChild(card);
+                });
+            })
+            .catch(error => {
+                status.textContent = error.message;
+            });
+    </script>
+</body>
+
+</html>

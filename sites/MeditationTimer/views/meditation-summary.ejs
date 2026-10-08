@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head.ejs', { title: 'Meditation summary' }) %>
+<body>
+    <main class="page-shell">
+        <header class="topbar">
+            <a class="brand" href="/" aria-label="Still home">
+                <span class="brand-mark" aria-hidden="true">◌</span>
+                <span>still<span class="brand-period">.</span></span>
+            </a>
+            <div class="account-area">
+                <a class="account-link" href="/">Meditation timer</a>
+            </div>
+        </header>
+
+        <section class="summary-page">
+            <a class="back-link summary-back" href="/">← Back to your meditation</a>
+            <header class="section-heading">
+                <p class="eyebrow">Your practice</p>
+                <h1>Meditation summary</h1>
+                <p class="intro">See the time you’ve made for yourself, day by day and altogether.</p>
+            </header>
+
+            <p id="summary-message" class="app-error" role="status">Loading your meditation summary…</p>
+            <section id="summary-content" hidden>
+                <div class="summary-stats">
+                    <article class="summary-stat">
+                        <p class="summary-stat-label">Total meditation time</p>
+                        <strong id="total-time" class="summary-stat-value">0 min</strong>
+                        <p id="total-sessions" class="summary-stat-detail">0 completed sessions</p>
+                    </article>
+                    <article class="summary-stat">
+                        <p class="summary-stat-label">Days practiced</p>
+                        <strong id="practice-days" class="summary-stat-value">0</strong>
+                        <p class="summary-stat-detail">Days with a completed meditation</p>
+                    </article>
+                    <article class="summary-stat">
+                        <p class="summary-stat-label">Consecutive days</p>
+                        <strong id="current-streak" class="summary-stat-value">0</strong>
+                        <p class="summary-stat-detail">Your current practice streak</p>
+                    </article>
+                </div>
+
+                <section class="summary-history-card" aria-labelledby="daily-summary-title">
+                    <div class="summary-history-heading">
+                        <h2 id="daily-summary-title">Daily practice</h2>
+                        <button id="clear-history-button" class="summary-danger" type="button">Delete all history</button>
+                    </div>
+                    <p id="summary-status" class="field-hint summary-status" aria-live="polite"></p>
+                    <table class="daily-summary">
+                        <thead>
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Sessions</th>
+                                <th scope="col">Meditated</th>
+                                <th scope="col">Cumulative</th>
+                            </tr>
+                        </thead>
+                        <tbody id="daily-summary-body"></tbody>
+                    </table>
+                </section>
+            </section>
+        </section>
+        <%- include('partials/footer.ejs') %>
+    </main>
+    <script src="/dist/js/meditation-summary.js" defer></script>
+</body>
+</html>

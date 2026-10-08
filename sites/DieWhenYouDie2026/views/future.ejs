@@ -110,7 +110,7 @@
 	</style>
 </head>
 <body>
-	<main>
+	<main data-fortune-id="<%= typeof fortuneID === 'undefined' ? '' : fortuneID %>">
 		<div id="spinner" aria-label="Loading your fate" role="status"></div>
 		<h1>Meet Your Fate</h1>
 
@@ -149,7 +149,12 @@
 		main.classList.add('loading');
 		spinner.classList.add('visible');
 
-		fetch('/f/getFortune')
+		const fortuneID = main.dataset.fortuneId;
+		const fortuneUrl = fortuneID
+			? `/f/getFortune?fortuneID=${encodeURIComponent(fortuneID)}`
+			: '/f/getFortune';
+
+		fetch(fortuneUrl)
 			.then(response => {
 				if (!response.ok) throw new Error('Request failed');
 				return response.json();

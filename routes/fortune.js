@@ -3,6 +3,27 @@ module.exports = function (fortunesDBpath) {
     const router = express.Router();
     const fortunesDB = new(require('simple-json-db'))(fortunesDBpath);
 
+    router.get('/read/:fortuneID', (req, res) => {
+        if (!fortunesDB.has(req.params.fortuneID)) {
+            return res.status(404).send('Fortune not found');
+        }
+
+        res.render('future', {
+            fortuneID: req.params.fortuneID
+        });
+    });
+
+    router.get('/history', (req, res) => {
+        const history = Object.entries(fortunesDB.JSON())
+            .map(([fortuneID, fortune]) => ({
+                fortuneID,
+                ...fortune
+            }))
+            .sort((first, second) => new Date(second.dateCreated) - new Date(first.dateCreated));
+
+        res.json(history);
+    });
+
     router.get('/lookup', (req, res) => {
         const {
             name,
@@ -41,11 +62,19 @@ module.exports = function (fortunesDBpath) {
 
 
     router.get('/getFortune', (req, res) => {
-        const fortuneID = req.session.fortuneID;
+        const requestedFortuneID = req.query.fortuneID;
+        const fortuneID = (typeof requestedFortuneID === 'string' && requestedFortuneID)
+            ? requestedFortuneID
+            : req.session.fortuneID;
 
         if (!fortuneID) {
             return res.status(400).json({
                 error: 'No fortune ID found in session'
+            });
+        }
+        if (!fortunesDB.has(fortuneID)) {
+            return res.status(404).json({
+                error: 'Fortune not found'
             });
         }
         const {

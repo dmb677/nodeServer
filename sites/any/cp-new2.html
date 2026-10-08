@@ -22,6 +22,12 @@
         integrity="sha512-D4pL3vNgjkHR/qq+nZywuS6Hg1gwR+UzrdBW6Yg8l26revKyQHMgPq9CLJ2+HHalepS+NuGw1ayCCsGXu9JCXA=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+    <!-- Leaflet map -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+
 
     <link href="dist_all/cp-styles.css" rel="stylesheet" type="text/css" />
 
@@ -39,6 +45,7 @@
 
         <div id="UPDATE-nodeV"></div>
         <div id="UPDATE-systemctl"></div><br>
+        <div id="diagMemory" class="mb-3"></div>
 
 
         <div id="userStatus">
@@ -70,7 +77,30 @@
                     </div>
                     <input type="text" class="form-control" id="newStepSize" value="10m" aria-label=""
                         aria-describedby="basic-addon1">
+                    <select class="form-select" id="histogramYAxisScale" aria-label="Histogram Y-axis scale">
+                        <option value="linear" selected>Linear Y-axis</option>
+                        <option value="logarithmic">Logarithmic Y-axis</option>
+                    </select>
                 </div>
+                <div class="row g-2 align-items-end mb-3" role="group" aria-label="Visualization date range">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label mb-1" for="visualizationStartDate">From date</label>
+                        <input type="date" class="form-control" id="visualizationStartDate">
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label mb-1" for="visualizationEndDate">To date</label>
+                        <input type="date" class="form-control" id="visualizationEndDate">
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <button class="btn btn-outline-secondary" id="clearVisualizationDates" type="button">
+                            Clear date range
+                        </button>
+                    </div>
+                </div>
+                <p class="form-text" id="visualizationDateStatus" aria-live="polite">
+                    Dates use your local timezone and apply to loaded pages in the server histogram, URL histogram, and IP map.
+                </p>
+                <p class="form-text">Logarithmic scale cannot display zero-valued bins.</p>
                 <canvas id="myChart"></canvas>
             </div>
         </div>
@@ -78,14 +108,22 @@
         <div class="row">
             <div class="col-12">
                 <h1 class=" mt-5">URL Histogram</h1>
+                <p id="diagLogRequestCount" aria-live="polite">
+                    /get-diag-log requests in loaded pages: 0
+                </p>
                 <canvas id="myURLChart"></canvas>
             </div>
         </div>
 
         <div class="row">
             <div class="col-6">
-                <h1 class=" mt-5">Server Log <button type="button" class="btn btn-danger"
-                        id="updateServerLog">Update</button></h1>
+                <h1 class=" mt-5">Server Log</h1>
+                <div class="d-flex gap-2 align-items-center mb-2">
+                    <button type="button" class="btn btn-outline-secondary" id="previousLogPage" disabled>Newer</button>
+                    <span id="logPageStatus" aria-live="polite"></span>
+                    <button type="button" class="btn btn-outline-secondary" id="nextLogPage" disabled>Older</button>
+                    <button type="button" class="btn btn-outline-primary" id="loadAllLogPages" disabled>Load All</button>
+                </div>
                 <div class="container scrollable" id="serverLog">
 
                 </div>
@@ -95,6 +133,13 @@
                 <div class="container scrollable" id="ipLog">
 
                 </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mt-5">IP Locations</h1>
+                <p id="ipMapStatus" aria-live="polite">Load log pages to show IP locations.</p>
+                <div id="ipMap" role="region" aria-label="Map of IP address locations" style="height: 480px;"></div>
             </div>
         </div>
         <div class="row">

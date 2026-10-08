@@ -35,6 +35,159 @@ module.exports = function (userDBpath) {
         }
     });
 
+    const defaultPreferences = {
+        durationMinutes: 10,
+        intervalMinutes: 5,
+        startDelaySeconds: 0,
+        startSound: 'bell',
+        intervalSound: 'bell',
+        finishSound: 'bell',
+        theme: 'light'
+    };
+    const allowedIntervals = new Set([0, 1, 2, 3, 5, 10, 15]);
+    const allowedSounds = new Set([
+        'bell', 'chime', 'bowl', 'woodblock', 'crystal', 'pulse', 'flute', 'waterdrop', 'gong', 'none'
+    ]);
+    const allowedThemes = new Set(['light', 'sage', 'forest', 'dark', 'midnight', 'aurora', 'black', 'high-contrast']);
+
+    router.get('/preferences', (req, res) => {
+        const username = req.session.user;
+        if (!username || !UserDB.has(username)) {
+            return res.status(401).json({ error: "Sign in to load your settings." });
+        }
+
+        const user = UserDB.get(username);
+        const storedPreferences = user.preferences || {};
+        const theme = allowedThemes.has(storedPreferences.theme) ? storedPreferences.theme : defaultPreferences.theme;
+        const preferences = {
+            durationMinutes: Number.isInteger(storedPreferences.durationMinutes) &&
+                storedPreferences.durationMinutes >= 1 && storedPreferences.durationMinutes <= 180
+                ? storedPreferences.durationMinutes
+                : defaultPreferences.durationMinutes,
+            intervalMinutes: allowedIntervals.has(storedPreferences.intervalMinutes)
+                ? storedPreferences.intervalMinutes
+                : defaultPreferences.intervalMinutes,
+            startDelaySeconds: Number.isInteger(storedPreferences.startDelaySeconds) &&
+                storedPreferences.startDelaySeconds >= 0 && storedPreferences.startDelaySeconds <= 60
+                ? storedPreferences.startDelaySeconds
+                : defaultPreferences.startDelaySeconds,
+            startSound: allowedSounds.has(storedPreferences.startSound)
+                ? storedPreferences.startSound
+                : defaultPreferences.startSound,
+            intervalSound: allowedSounds.has(storedPreferences.intervalSound)
+                ? storedPreferences.intervalSound
+                : defaultPreferences.intervalSound,
+            finishSound: allowedSounds.has(storedPreferences.finishSound)
+                ? storedPreferences.finishSound
+                : defaultPreferences.finishSound,
+            theme
+        };
+
+        if (storedPreferences.durationMinutes !== preferences.durationMinutes ||
+            storedPreferences.intervalMinutes !== preferences.intervalMinutes ||
+            storedPreferences.startDelaySeconds !== preferences.startDelaySeconds ||
+            storedPreferences.startSound !== preferences.startSound ||
+            storedPreferences.intervalSound !== preferences.intervalSound ||
+            storedPreferences.finishSound !== preferences.finishSound ||
+            storedPreferences.theme !== preferences.theme) {
+            user.preferences = preferences;
+            UserDB.set(username, user);
+        }
+
+        res.json(preferences);
+    });
+
+    router.put('/preferences', (req, res) => {
+        const username = req.session.user;
+        if (!username || !UserDB.has(username)) {
+            return res.status(401).json({ error: "Sign in to save your settings." });
+        }
+
+        const {
+            durationMinutes,
+            intervalMinutes,
+            startDelaySeconds,
+            startSound,
+            intervalSound,
+            finishSound,
+            theme
+        } = req.body || {};
+        if (!Number.isInteger(durationMinutes) || durationMinutes < 1 || durationMinutes > 180) {
+            return res.status(400).json({ error: "Meditation length must be between 1 and 180 minutes." });
+        }
+        if (!Number.isInteger(intervalMinutes) || !allowedIntervals.has(intervalMinutes)) {
+            return res.status(400).json({ error: "Choose a supported bell interval." });
+        }
+        if (!Number.isInteger(startDelaySeconds) || startDelaySeconds < 0 || startDelaySeconds > 60) {
+            return res.status(400).json({ error: "Starting pause must be between 0 and 60 seconds." });
+        }
+        if (![startSound, intervalSound, finishSound].every(sound => allowedSounds.has(sound))) {
+            return res.status(400).json({ error: "Choose a supported meditation sound." });
+        }
+        if (!allowedThemes.has(theme)) {
+            return res.status(400).json({ error: "Choose a supported theme." });
+        }
+
+        const user = UserDB.get(username);
+        user.preferences = {
+            durationMinutes,
+            intervalMinutes,
+            startDelaySeconds,
+            startSound,
+            intervalSound,
+            finishSound,
+            theme
+        };
+        UserDB.set(username, user);
+        res.json(user.preferences);
+    });
+
+    router.get('/meditations', (req, res) => {
+        const username = req.session.user;
+        if (!username || !UserDB.has(username)) {
+            return res.status(401).json({ error: "Sign in to view your meditation history." });
+        }
+
+        const user = UserDB.get(username);
+        const history = Array.isArray(user.meditationHistory) ? user.meditationHistory : [];
+        res.json(history);
+    });
+
+    router.post('/meditations', (req, res) => {
+        const username = req.session.user;
+        if (!username || !UserDB.has(username)) {
+            return res.status(401).json({ error: "Sign in to save your meditation history." });
+        }
+
+        const { durationMinutes } = req.body || {};
+        if (!Number.isInteger(durationMinutes) || durationMinutes < 1 || durationMinutes > 180) {
+            return res.status(400).json({ error: "Meditation length must be between 1 and 180 minutes." });
+        }
+
+        const user = UserDB.get(username);
+        const history = Array.isArray(user.meditationHistory) ? user.meditationHistory : [];
+        const meditation = {
+            durationMinutes,
+            completedAt: new Date().toISOString()
+        };
+        history.unshift(meditation);
+        user.meditationHistory = history;
+        UserDB.set(username, user);
+        res.status(201).json(meditation);
+    });
+
+    router.delete('/meditations', (req, res) => {
+        const username = req.session.user;
+        if (!username || !UserDB.has(username)) {
+            return res.status(401).json({ error: "Sign in to clear your meditation history." });
+        }
+
+        const user = UserDB.get(username);
+        user.meditationHistory = [];
+        UserDB.set(username, user);
+        res.json({ ok: true });
+    });
+
 
     //**old CP*/
     router.post("/signin", (req, res) => {

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head.ejs', { title: 'Meditation timer' }) %>
+<body>
+    <main class="page-shell">
+        <header class="topbar">
+            <a class="brand" href="/" aria-label="Still home">
+                <span class="brand-mark" aria-hidden="true">◌</span>
+                <span>still<span class="brand-period">.</span></span>
+            </a>
+            <div class="account-area">
+                <span id="welcome-user" class="welcome-user"></span>
+                <button id="install-button" class="text-button" type="button" hidden>Install app</button>
+                <button id="settings-button" class="icon-button" type="button" aria-label="Open session settings" aria-haspopup="dialog" hidden>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m14.7 3.9.45 1.54c.43.15.84.39 1.2.69l1.53-.46 1.24 2.15-1.1 1.16c.08.45.08.92 0 1.37l1.1 1.16-1.24 2.15-1.53-.46c-.36.3-.77.54-1.2.69l-.45 1.54h-2.48l-.45-1.54a4.8 4.8 0 0 1-1.2-.69l-1.53.46L7.8 11.5l1.1-1.16a4.1 4.1 0 0 1 0-1.37L7.8 7.81l1.24-2.15 1.53.46c.36-.3.77-.54 1.2-.69l.45-1.54h2.48Z"/>
+                        <circle cx="13.46" cy="9.65" r="2.05"/>
+                    </svg>
+                </button>
+                <a id="account-link" class="account-link" href="/auth/login">Log in</a>
+                <button id="logout-button" class="text-button" type="button" hidden>Log out</button>
+            </div>
+        </header>
+
+        <section id="login-panel" class="login-panel" aria-labelledby="welcome-title">
+            <div class="login-copy">
+                <p class="eyebrow">A moment for yourself</p>
+                <h1 id="welcome-title">Come back to<br>your breath.</h1>
+                <p class="intro">Sign in to begin a quiet session, set your own pace, and let a gentle bell keep you company.</p>
+                <div class="login-actions">
+                    <a class="button button-primary" href="/auth/login">Log in</a>
+                    <a class="button button-secondary" href="/auth/signup">Create an account</a>
+                </div>
+            </div>
+            <div class="login-art" aria-hidden="true">
+                <span class="art-orbit orbit-one"></span>
+                <span class="art-orbit orbit-two"></span>
+                <span class="art-moon"></span>
+                <span class="art-star star-one">✳</span>
+                <span class="art-star star-two">·</span>
+            </div>
+        </section>
+
+        <section id="timer-panel" class="timer-panel" aria-labelledby="timer-title" hidden>
+            <div class="section-heading">
+                <p class="eyebrow">Your practice</p>
+                <h1 id="timer-title">Make space to be.</h1>
+                <p class="intro">Settle in. The rest can wait.</p>
+            </div>
+
+            <div class="timer-layout">
+                <section class="timer-card" aria-label="Meditation countdown">
+                    <div class="timer-ring-wrap">
+                        <svg class="timer-ring" viewBox="0 0 240 240" role="img" aria-labelledby="timer-description">
+                            <title id="timer-description">Meditation session countdown</title>
+                            <circle class="ring-track" cx="120" cy="120" r="108"></circle>
+                            <circle id="interval-track" class="ring-track interval-ring" cx="120" cy="120" r="100"></circle>
+                            <circle id="progress-ring" class="ring-progress" cx="120" cy="120" r="108"></circle>
+                            <circle id="interval-progress-ring" class="ring-progress interval-ring" cx="120" cy="120" r="100"></circle>
+                        </svg>
+                        <div class="timer-readout">
+                            <span id="time-display" class="time-display" aria-live="off">10:00</span>
+                            <span id="timer-caption" class="timer-caption">MINUTES OF STILLNESS</span>
+                        </div>
+                    </div>
+                    <p id="session-message" class="session-message" aria-live="polite">When you're ready, begin.</p>
+                    <div class="timer-actions">
+                        <button id="start-button" class="button button-primary" type="button">Begin meditation</button>
+                        <button id="pause-button" class="button button-secondary" type="button" hidden>Pause</button>
+                        <button id="reset-button" class="reset-button" type="button" hidden>End session</button>
+                    </div>
+                    <button id="zen-mode-button" class="zen-mode-button" type="button" aria-pressed="false">Enter zen mode</button>
+                </section>
+
+            </div>
+            <details id="meditation-history" class="meditation-history">
+                <summary>Completed meditations</summary>
+                <p id="history-status" class="field-hint" aria-live="polite">Loading meditation history…</p>
+                <ul id="history-list" class="history-list"></ul>
+            </details>
+            <a class="summary-link" href="/meditation-summary">View meditation summary</a>
+        </section>
+
+        <dialog id="settings-dialog" class="settings-dialog" aria-labelledby="settings-title">
+            <section class="settings-card">
+                <div class="settings-heading">
+                    <div>
+                        <p class="eyebrow">Make it yours</p>
+                        <h2 id="settings-title">Session settings</h2>
+                    </div>
+                    <button id="close-settings-button" class="icon-button settings-close" type="button" aria-label="Close session settings">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m6 6 12 12M18 6 6 18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="settings-groups">
+                    <section class="settings-group" aria-labelledby="session-settings-title">
+                        <h3 id="session-settings-title" class="settings-group-title">Session</h3>
+                        <div class="settings-group-fields session-settings-fields">
+                            <div class="settings-field">
+                                <label class="field-label" for="duration-input">Meditation length</label>
+                                <div class="duration-control">
+                                    <input id="duration-input" type="number" min="1" max="180" value="10" inputmode="numeric">
+                                    <span>minutes</span>
+                                </div>
+                            </div>
+                            <div class="settings-field">
+                                <label class="field-label" for="start-delay-input">Starting pause</label>
+                                <div class="duration-control">
+                                    <input id="start-delay-input" type="number" min="0" max="60" step="1" value="0" inputmode="numeric">
+                                    <span>seconds</span>
+                                </div>
+                            </div>
+                            <div class="settings-field">
+                                <label class="field-label" for="interval-input">Bell interval</label>
+                                <select id="interval-input">
+                                    <option value="0">No interval bells</option>
+                                    <option value="1">Every 1 minute</option>
+                                    <option value="2">Every 2 minutes</option>
+                                    <option value="3">Every 3 minutes</option>
+                                    <option value="5" selected>Every 5 minutes</option>
+                                    <option value="10">Every 10 minutes</option>
+                                    <option value="15">Every 15 minutes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="settings-group" aria-labelledby="sound-settings-title">
+                        <h3 id="sound-settings-title" class="settings-group-title">Sounds</h3>
+                        <div class="settings-group-fields sound-settings-fields">
+                            <div class="settings-field">
+                                <label class="field-label" for="start-sound-input">When meditation starts</label>
+                                <select id="start-sound-input">
+                                    <option value="bell">Gentle bell</option>
+                                    <option value="chime">Bright chime</option>
+                                    <option value="bowl">Low singing bowl</option>
+                                    <option value="woodblock">Woodblock</option>
+                                    <option value="crystal">Crystal tones</option>
+                                    <option value="pulse">Soft pulse</option>
+                                    <option value="flute">Breath flute</option>
+                                    <option value="waterdrop">Water drops</option>
+                                    <option value="gong">Soft gong</option>
+                                    <option value="none">No sound</option>
+                                </select>
+                            </div>
+                            <div class="settings-field">
+                                <label class="field-label" for="interval-sound-input">At each interval</label>
+                                <select id="interval-sound-input">
+                                    <option value="bell">Gentle bell</option>
+                                    <option value="chime">Bright chime</option>
+                                    <option value="bowl">Low singing bowl</option>
+                                    <option value="woodblock">Woodblock</option>
+                                    <option value="crystal">Crystal tones</option>
+                                    <option value="pulse">Soft pulse</option>
+                                    <option value="flute">Breath flute</option>
+                                    <option value="waterdrop">Water drops</option>
+                                    <option value="gong">Soft gong</option>
+                                    <option value="none">No sound</option>
+                                </select>
+                            </div>
+                            <div class="settings-field">
+                                <label class="field-label" for="finish-sound-input">When meditation ends</label>
+                                <select id="finish-sound-input">
+                                    <option value="bell">Gentle bell</option>
+                                    <option value="chime">Bright chime</option>
+                                    <option value="bowl">Low singing bowl</option>
+                                    <option value="woodblock">Woodblock</option>
+                                    <option value="crystal">Crystal tones</option>
+                                    <option value="pulse">Soft pulse</option>
+                                    <option value="flute">Breath flute</option>
+                                    <option value="waterdrop">Water drops</option>
+                                    <option value="gong">Soft gong</option>
+                                    <option value="none">No sound</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="settings-group appearance-settings" aria-labelledby="appearance-settings-title">
+                        <h3 id="appearance-settings-title" class="settings-group-title">Appearance</h3>
+                        <div class="settings-field">
+                            <label class="field-label" for="theme-input">Theme</label>
+                            <select id="theme-input">
+                                <option value="light">Light</option>
+                                <option value="sage">Sage</option>
+                                <option value="forest">Forest</option>
+                                <option value="dark">Dark</option>
+                                <option value="midnight">Midnight</option>
+                                <option value="aurora">Aurora</option>
+                                <option value="black">Black</option>
+                                <option value="high-contrast">High contrast</option>
+                            </select>
+                        </div>
+                    </section>
+                </div>
+                <p class="field-hint settings-hint">Sound samples play when selected. Starting pause is up to 60 seconds.</p>
+                <p id="settings-status" class="field-hint" aria-live="polite"></p>
+                <div class="settings-actions">
+                    <button id="restore-defaults-button" class="settings-action settings-restore" type="button">Restore defaults</button>
+                    <div class="settings-action-group">
+                        <button id="cancel-settings-button" class="button button-secondary" type="button">Cancel</button>
+                        <button id="save-settings-button" class="button button-primary" type="button">Save</button>
+                    </div>
+                </div>
+            </section>
+        </dialog>
+
+        <p id="app-error" class="app-error" role="alert" hidden></p>
+        <%- include('partials/footer.ejs') %>
+    </main>
+    <script src="/dist/js/meditation.js" defer></script>
+</body>
+</html>

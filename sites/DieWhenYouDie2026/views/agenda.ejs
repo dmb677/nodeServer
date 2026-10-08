@@ -1,67 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Coming soon</title>
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: radial-gradient(circle at top, #330000 0%, #000000 60%),
-                  linear-gradient(180deg, rgba(100,0,0,0.9) 0%, rgba(0,0,0,0.95) 100%);
-      color: #ffdddd;
-      font-family: "Helvetica Neue", Arial, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      overflow: hidden;
-    }
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Agenda - Die When You Die 2026</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-    .blood {
-      position: absolute;
-      width: 120%;
-      height: 120%;
-      top: -10%;
-      left: -10%;
-      background-image:
-        radial-gradient(circle at 20% 20%, rgba(255,0,0,0.9) 0%, transparent 16%),
-        radial-gradient(circle at 80% 30%, rgba(220,0,0,0.85) 0%, transparent 14%),
-        radial-gradient(circle at 40% 70%, rgba(180,0,0,0.8) 0%, transparent 18%),
-        radial-gradient(circle at 70% 80%, rgba(240,10,10,0.9) 0%, transparent 12%);
-      filter: blur(2px);
-      mix-blend-mode: screen;
-      pointer-events: none;
-    }
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: #111;
+            color: #eee;
+        }
 
-    .message {
-      position: relative;
-      z-index: 1;
-      width: 90%;
-      max-width: 900px;
-      padding: 40px;
-      border: 3px solid rgba(255, 0, 0, 0.7);
-      box-shadow: 0 0 60px rgba(255, 0, 0, 0.25);
-      background: rgba(0, 0, 0, 0.55);
-      backdrop-filter: blur(6px);
-    }
+        a {
+            color: #f5d4db;
+            text-decoration: none;
+        }
 
-    h1 {
-      margin: 0;
-      font-size: clamp(3rem, 8vw, 8rem);
-      line-height: 1;
-      letter-spacing: 0.25rem;
-      font-weight: 900;
-      color: #ff4444;
-      text-shadow: 0 0 30px rgba(255, 0, 0, 0.8), 0 0 80px rgba(0, 0, 0, 0.7);
-    }
-  </style>
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 24px 16px 48px;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+            font-size: clamp(1.8rem, 6vw, 2.5rem);
+            line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .meta {
+            color: #999;
+            font-size: 13px;
+            margin: 0 0 8px;
+        }
+
+        .card {
+            background: #0e0e0e;
+            border: 1px solid #1a1a1a;
+            padding: 8px 16px 16px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .agenda {
+            display: grid;
+            grid-template-columns: 7.5rem 1fr;
+            gap: 0;
+        }
+
+        .time,
+        .event {
+            padding: 12px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .time {
+            color: #b9b9b9;
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        .event {
+            color: #eee;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .icon {
+            width: 1.6em;
+            flex-shrink: 0;
+            text-align: center;
+            font-style: normal;
+            font-size: 1.15em;
+            line-height: 1;
+        }
+
+        .sealed .time,
+        .sealed .event {
+            background: rgba(143, 71, 71, 0.28);
+            border-bottom-color: rgba(143, 71, 71, 0.35);
+        }
+
+        .marker {
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-weight: 800;
+            color: #c97a7a;
+        }
+
+        .rite {
+            font-style: italic;
+            color: #f5d4db;
+        }
+
+        .agenda > :nth-last-child(-n+2) {
+            border-bottom: 0;
+        }
+
+        nav {
+            margin-top: 24px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 18px 12px 32px;
+            }
+
+            .agenda {
+                grid-template-columns: 5.5rem 1fr;
+            }
+
+            .time,
+            .event {
+                padding: 10px 6px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-  <div class="blood"></div>
-  <div class="message">
-    <h1>Coming soon</h1>
-  </div>
+    <div class="container">
+        <header>
+            <h1>Agenda</h1>
+            <p class="meta">Die When You Die ⚫ November 7, 2026</p>
+            <p class="meta">Once the doors are sealed, they stay sealed.</p>
+        </header>
+
+        <section class="card">
+            <div class="agenda">
+                <div class="time">6:00 pm</div>
+                <div class="event"><span class="icon" aria-hidden="true">🚪</span>Doors open</div>
+
+                <div class="time sealed">7:30 pm</div>
+                <div class="event sealed marker"><span class="icon" aria-hidden="true">🔒</span>Doors sealed</div>
+
+                <div class="time sealed"></div>
+                <div class="event sealed rite"><span class="icon" aria-hidden="true">🕯️</span>Opening ceremony</div>
+
+                <div class="time sealed"></div>
+                <div class="event sealed rite"><span class="icon" aria-hidden="true">🍷</span>Sacraments</div>
+
+                <div class="time sealed"></div>
+                <div class="event sealed rite"><span class="icon" aria-hidden="true">🧿</span>Voodoo</div>
+
+                <div class="time sealed"></div>
+                <div class="event sealed rite"><span class="icon" aria-hidden="true">📜</span>Poetry</div>
+
+                <div class="time sealed"></div>
+                <div class="event sealed rite"><span class="icon" aria-hidden="true">🪩</span>Ecstatic dance</div>
+
+                <div class="time sealed"></div>
+                <div class="event sealed rite"><span class="icon" aria-hidden="true">🫂</span>Cuddle puddle</div>
+
+                <div class="time sealed"></div>
+                <div class="event sealed rite"><span class="icon" aria-hidden="true">🔥</span>Fire</div>
+
+                <div class="time sealed">Midnight</div>
+                <div class="event sealed marker"><span class="icon" aria-hidden="true">🔓</span>Doors unsealed</div>
+
+                <div class="time"></div>
+                <div class="event"><span class="icon" aria-hidden="true">🍜</span>Ramen</div>
+
+                <div class="time"></div>
+                <div class="event"><span class="icon" aria-hidden="true">🛏️</span>Sleepover</div>
+            </div>
+        </section>
+
+        <nav>
+            <a href="/links">← Links</a>
+            &nbsp;·&nbsp;
+            <a href="/">Home</a>
+        </nav>
+    </div>
 </body>
+
 </html>

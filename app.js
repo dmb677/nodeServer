@@ -1,6 +1,8 @@
 //Setup
 const pkg = require('./package.json');
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 const website = 'sites/' + process.argv[2];
 if (!fs.existsSync(website + '/.env')) {
@@ -12,23 +14,45 @@ require('dotenv').config({
     quiet: true
 });
 
+const configuredDirectories = [
+    process.env.sessionDB,
+    process.env.LogIPDB,
+    process.env.imagePath,
+    process.env.userDB && path.dirname(process.env.userDB),
+    process.env.logfile && path.dirname(process.env.logfile),
+    process.env.gameDB && path.dirname(process.env.gameDB),
+    process.env.fortunesDB && path.dirname(process.env.fortunesDB)
+].filter(Boolean);
+
+for (const directory of new Set(configuredDirectories)) {
+    if (fs.existsSync(directory)) {
+        if (!fs.statSync(directory).isDirectory()) {
+            console.error(`Configured storage path is not a directory: ${directory}`);
+            process.exit(1);
+        }
+        console.log(`Directory already exists at ${directory}`);
+        continue;
+    }
+
+    try {
+        fs.mkdirSync(directory, { recursive: true });
+        console.log(`Directory created at ${directory}`);
+    } catch (error) {
+        if (error.code === 'EACCES' || error.code === 'EPERM') {
+            console.error(`Insufficient permissions to create directory ${directory}: ${error.message}`);
+        } else {
+            console.error(`Could not create directory ${directory}: ${error.message}`);
+        }
+        process.exit(1);
+    }
+}
+
 const app = require('express')();
 const exec = require('util').promisify(require('child_process').exec);
 const multer = require('multer');
-const path = require('path');
 const JSONdb = require('simple-json-db');
 const imageLog = new JSONdb(process.env.imagePath + '/imageLog.json');
 
-
-//check if process.env.imagePath exists
-if (!fs.existsSync(process.env.imagePath)) {
-    fs.mkdirSync(process.env.imagePath, {
-        recursive: true
-    });
-    console.log(`Directory created at ${process.env.imagePath}`);
-} else {
-    console.log(`Directory already exists at ${process.env.imagePath}`);
-}
 
 var storage = multer.diskStorage({
     destination: function (req, file, callback) {
@@ -71,7 +95,9 @@ const logRoutes = require('./routes/log')({
     servicename: process.env.servicename
 });
 const gameRoutes = require('./routes/game-routes')(process.env.gameDB);
-const fortuneRoutes = require('./routes/fortune')(process.env.fortunesDB);
+const fortuneRoutes = process.env.fortunesDB
+    ? require('./routes/fortune')(process.env.fortunesDB)
+    : null;
 
 const port = process.env.port;
 const httpdocs = __dirname + '/' + website + '/httpdocs/';
@@ -102,7 +128,9 @@ app.use((require('express')).static(httpdocsAny));
 app.use((require('express')).static(process.env.imagePath));
 app.use('/auth', authRoutes);
 app.use('/game', gameRoutes);
-app.use('/f', fortuneRoutes);
+if (fortuneRoutes) {
+    app.use('/f', fortuneRoutes);
+}
 /** 
 app.get('/upload', async (request, response) => {
     response.sendFile(__dirname + '/upload.html');
@@ -200,17 +228,15 @@ app.use((req, res) => {
 });
 
 //Start up app
-exec('hostname -I')
-    .then(d => {
-        app.listen(port, () => {
-            console.log(
-                `node requirements: ${pkg.engines.node}\nnode version: ${process.version}`);
+const onListening = () => {
+    console.log(
+        `node requirements: ${pkg.engines.node}\nnode version: ${process.version}`);
 
-            console.log(
-                `app listening at http://${d.stdout.trim().split(' ')[0]}:${port}`
-            );
-        });
-    })
-    .catch(error => {
-        console.log("Could not get hostname: " + error);
-    });
+    console.log(`app listening at http://${os.hostname()}:${port}`);
+};
+
+if (process.env.NODE_SERVER_HOST) {
+    app.listen(port, process.env.NODE_SERVER_HOST, onListening);
+} else {
+    app.listen(port, onListening);
+}
